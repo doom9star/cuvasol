@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Raleway:wght@800&display=swap");
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.ant-form-item-explain-error {
+  font-size: 0.6rem;
+  margin: 0.2rem 0rem 0.6rem 0rem;
+}

@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend",
+      "type": "process",
+      "command": "./.vscode/setup.sh",
+      "args": ["backend"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "frontend",
+      "type": "process",
+      "command": "./.vscode/setup.sh",
+      "args": ["frontend"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "setup",
+      "group": "test",
+      "dependsOn": ["backend", "frontend"],
+      "dependsOrder": "parallel"
+    }
+  ]
+}
