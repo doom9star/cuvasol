@@ -1,18 +1,29 @@
-import { BeforeInsert, Column, Entity } from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import bcrypt from "bcryptjs";
-
 import Base from "./Base";
+import File from "./File";
+import { UserType } from "../lib/types/model";
 
 @Entity("user")
 export default class User extends Base {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
   password: string;
+
+  @Column({ default: false })
+  activated: boolean;
+
+  @OneToOne(() => File, { cascade: true })
+  @JoinColumn()
+  avatar: File;
+
+  @Column({ type: "enum", enum: UserType })
+  type: UserType;
 
   @BeforeInsert()
   async hashPassword() {

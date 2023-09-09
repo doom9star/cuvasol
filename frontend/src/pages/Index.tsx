@@ -33,9 +33,10 @@ export default function Index() {
         <p className="font-raleway text-4xl font-bold m-0 mb-2">
           INTERVIEW PREPARATION
         </p>
-        <p className="font-comfortaa text-2xl font-bold m-0 mb-4">
+        <p className="font-comfortaa text-2xl font-bold m-0 mb-2">
           Kickstart your career
         </p>
+        <p className="font-comfortaa text-lg font-bold m-0 mb-2">Today</p>
         <div className="font-comfortaa flex flex-col items-center justify-between text-lg font-bold p-10">
           <div className="flex justify-between w-full">
             <span className="m-2 h-full p-4 rounded-xl border border-red-500 bg-red-100 text-red-500 border-solid">
