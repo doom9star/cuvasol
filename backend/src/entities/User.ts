@@ -1,8 +1,16 @@
-import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from "typeorm";
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import bcrypt from "bcryptjs";
 import Base from "./Base";
 import File from "./File";
 import { UserType } from "../lib/types/model";
+import Report from "./Report";
 
 @Entity("user")
 export default class User extends Base {
@@ -15,15 +23,33 @@ export default class User extends Base {
   @Column()
   password: string;
 
-  @Column({ default: false })
-  activated: boolean;
-
   @OneToOne(() => File, { cascade: true })
   @JoinColumn()
   avatar: File;
 
-  @Column({ type: "enum", enum: UserType })
+  @Column({ type: "enum", enum: UserType, default: UserType.EMPLOYEE })
   type: UserType;
+
+  @Column()
+  location: string;
+
+  @Column()
+  phoneNumber: number;
+
+  @Column("datetime")
+  birthDate: Date;
+
+  @Column({ nullable: true })
+  linkedinURL: string;
+
+  @Column({ nullable: true })
+  githubURL: string;
+
+  @Column({ default: false })
+  activated: boolean;
+
+  @OneToMany(() => Report, (report) => report.user, { cascade: true })
+  reports: Report[];
 
   @BeforeInsert()
   async hashPassword() {

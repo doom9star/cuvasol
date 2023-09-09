@@ -3,3 +3,8 @@ export enum UserType {
   CLIENT = 2,
   EMPLOYEE = 3,
 }
+
+export enum EmployeeType {
+  CONSULTANT = 1,
+  INTERN = 2,
+}
