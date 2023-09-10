@@ -44,7 +44,7 @@ const main = async () => {
   app.use("/", MainRouter);
 
   app.listen(process.env.PORT, () => {
-    log("INFO", `server running on http://localhost:${process.env.PORT}`);
+    log("INFO", `server running on http://localhost:${process.env.PORT}!`);
   });
 };
 

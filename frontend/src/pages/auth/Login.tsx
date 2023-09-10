@@ -1,19 +1,19 @@
 import { Button, Form, Input, Typography } from "antd";
+import { AiOutlineLogin } from "react-icons/ai";
 import { FiLogIn } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTitle } from "../../hooks/useTitle";
 
 export default function Login() {
   useTitle("Login");
-  const navigate = useNavigate();
   return (
     <div className="w-full h-full flex flex-col justify-center lg:w-1/2 mx-auto">
-      <img
-        src="/logo.png"
-        alt="logo"
-        className="w-32 self-center cursor-pointer h-16 object-contain rounded-full mb-10"
-        onClick={() => navigate("/")}
-      />
+      <Typography.Title
+        level={4}
+        className="font-poppins flex items-center py-8"
+      >
+        <AiOutlineLogin className="mr-2" /> Login
+      </Typography.Title>
       <Form labelCol={{ span: 8 }} labelAlign="left">
         <Form.Item
           label="Email"

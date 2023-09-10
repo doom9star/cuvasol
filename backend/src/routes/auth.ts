@@ -2,7 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import User from "../entities/User";
 import {
-  ACTIVATE_PASSWORD_PREFIX,
+  ACTIVATE_ACCOUNT_PREFIX,
   APP_PREFIX,
   COOKIE_NAME,
   FORGOT_PASSWORD_PREFIX,
@@ -14,6 +14,8 @@ import isAuth from "../middlewares/isAuth";
 import isNotAuth from "../middlewares/isNotAuth";
 import { v4 } from "uuid";
 import { log } from "../lib/utils/logging";
+import { UserType } from "../lib/types/model";
+import Employee from "../entities/Employee";
 
 const router = Router();
 
@@ -27,38 +29,96 @@ router.get("/", isAuth, async (req: TAuthRequest, res) => {
   }
 });
 
-router.post("/activate/:tid", isAuth, async (req: TAuthRequest, res) => {
-  try {
-    const { tid } = req.params;
-    const uid = req.redclient.get(
-      `${APP_PREFIX}${ACTIVATE_PASSWORD_PREFIX}${tid}`
-    );
+router.post(
+  "/activate-account/:tid",
+  isAuth,
+  async (req: TAuthRequest, res) => {
+    try {
+      const { tid } = req.params;
+      const { password } = req.body;
 
-    const user = await User.findOne({ where: { id: uid } });
-    if (!user) return res.json(getResponse(404));
+      const uid = req.redclient.get(
+        `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`
+      );
 
-    if (user.activated)
-      return res.json(getResponse(400, "Account already activated!"));
+      const user = await User.findOne({ where: { id: uid } });
+      if (!user) return res.json(getResponse(404));
 
-    user.activated = true;
-    await user.save();
+      if (user.activated)
+        return res.json(getResponse(400, "Account already activated!"));
 
-    req.redclient.del(`${APP_PREFIX}${ACTIVATE_PASSWORD_PREFIX}${tid}`);
+      const authorized = await user.checkPassword(password);
+      if (!authorized) return res.json(getResponse(401));
 
-    return res.json(getResponse(200));
-  } catch (error: any) {
-    log("ERROR", error.message);
-    return res.json(getResponse(500, error.message));
+      user.activated = true;
+      await user.save();
+
+      await req.redclient.del(`${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`);
+
+      return res.json(getResponse(200));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
+    }
   }
-});
+);
 
-router.post("/register", isNotAuth, async (req, res) => {
+router.post("/register", isNotAuth, async (req: TAuthRequest, res) => {
   try {
-    const { name, email, password } = req.body;
-    const user = await User.create({ name, email, password }).save();
+    const {
+      name,
+      email,
+      password,
+      type,
+      location,
+      phoneNumber,
+      birthDate,
+      linkedinURL,
+      githubURL,
+    } = req.body;
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      type,
+      location,
+      phoneNumber,
+      birthDate,
+      linkedinURL,
+      githubURL,
+    }).save();
+
+    if (type === UserType.EMPLOYEE) {
+      const {
+        employee: {
+          type,
+          salary,
+          startTime,
+          endTime,
+          joinedAt,
+          endedAt,
+          leftAt,
+        },
+      } = req.body;
+      await Employee.create({
+        type,
+        salary,
+        startTime,
+        endTime,
+        joinedAt,
+        endedAt,
+        leftAt,
+      }).save();
+    }
+
+    const tid = v4();
+    const key = `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`;
+    const url = `${process.env.CLIENT}/auth/activate-account/${key}`;
+    await req.redclient.set(key, user.id);
 
     res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
-    return res.json(getResponse(200, user));
+    return res.json(getResponse(200, url));
   } catch (error: any) {
     log("ERROR", error.message);
     return res.json(getResponse(500, error.message));
@@ -67,12 +127,14 @@ router.post("/register", isNotAuth, async (req, res) => {
 
 router.post("/login", isNotAuth, async (req, res) => {
   try {
-    const { nameOrEmail, password } = req.body;
+    const { email, password } = req.body;
     const user = await User.findOne({
-      where: { [nameOrEmail.includes("@") ? "email" : "name"]: nameOrEmail },
+      where: { email: email },
     });
 
     if (!user) return res.json(getResponse(404));
+    if (!user.activated)
+      return res.json(getResponse(400, "Account must be activated!"));
     if (!(await user.checkPassword(password)))
       return res.json(getResponse(401, "Wrong credentials!"));
 
@@ -104,9 +166,11 @@ router.post("/forgot-password", isAuth, async (req: TAuthRequest, res) => {
       return res.json(getResponse(400, "Account must be activated!"));
 
     const tid = v4();
-    req.redclient.set(`${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`, user.id);
+    const key = `${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`;
+    const url = `${process.env.CLIENT}/auth/reset-password/${key}`;
+    await req.redclient.set(key, user.id);
 
-    return res.json(getResponse(200));
+    return res.json(getResponse(200, url));
   } catch (error: any) {
     log("ERROR", error.message);
     return res.json(getResponse(500, error.message));
@@ -128,7 +192,7 @@ router.post("/reset-password/:tid", isAuth, async (req: TAuthRequest, res) => {
     user.password = await bcrypt.hash(password, 12);
     user.save();
 
-    req.redclient.del(`${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`);
+    await req.redclient.del(`${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`);
 
     return res.json(getResponse(200));
   } catch (error: any) {

@@ -11,6 +11,7 @@ import Base from "./Base";
 import File from "./File";
 import { UserType } from "../lib/types/model";
 import Report from "./Report";
+import Employee from "./Employee";
 
 @Entity("user")
 export default class User extends Base {
@@ -23,7 +24,7 @@ export default class User extends Base {
   @Column()
   password: string;
 
-  @OneToOne(() => File, { cascade: true })
+  @OneToOne(() => File, { cascade: true, nullable: true })
   @JoinColumn()
   avatar: File;
 
@@ -34,7 +35,7 @@ export default class User extends Base {
   location: string;
 
   @Column()
-  phoneNumber: number;
+  phoneNumber: string;
 
   @Column("datetime")
   birthDate: Date;
@@ -59,4 +60,6 @@ export default class User extends Base {
   async checkPassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password);
   }
+
+  employee?: Employee;
 }
