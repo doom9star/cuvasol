@@ -17,3 +17,12 @@ body {
   font-size: 0.6rem;
   margin: 0.2rem 0rem 0.6rem 0rem;
 }
+
+.ant-alert-description {
+  font-size: 0.7rem;
+}
+
+.ant-alert-message {
+  margin-bottom: 2px !important;
+  font-weight: bold;
+}

@@ -4,11 +4,14 @@ import { cAxios } from "../../library/constants";
 import { Button, Form, Input, Typography } from "antd";
 import { AiOutlineLock, AiOutlineMail } from "react-icons/ai";
 import { useTitle } from "../../hooks/useTitle";
+import { useDispatch } from "react-redux";
+import { setAlert } from "../../redux/slices/global";
 
 function ActivateAccount() {
   useTitle("Activate Account");
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const params = useParams();
 
   const activateAccount = useCallback(
@@ -18,10 +21,26 @@ function ActivateAccount() {
         .then((res) => {
           if (res.data.status === 200) {
             navigate("/auth/login");
+            dispatch(
+              setAlert({
+                type: "success",
+                message: "Account Activation!",
+                description:
+                  "Account has been successfully activated. You can login now!",
+              })
+            );
+          } else {
+            dispatch(
+              setAlert({
+                type: "error",
+                message: "Account Activation!",
+                description: `Account activation failed. ${res.data.message}`,
+              })
+            );
           }
         });
     },
-    [params.tid, navigate]
+    [params.tid, navigate, dispatch]
   );
 
   return (
