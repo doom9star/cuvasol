@@ -1,14 +1,25 @@
-import { Button, Form, Input, Typography } from "antd";
-import {
-  AiFillFacebook,
-  AiFillGoogleSquare,
-  AiOutlineUserAdd,
-} from "react-icons/ai";
+import { Button, Form, Input, Radio, Typography } from "antd";
+import { AiOutlineUserAdd } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { useTitle } from "../../hooks/useTitle";
+import { UserType } from "../../types/models";
+import { useMemo } from "react";
 
 export default function Register() {
   useTitle("Register");
+
+  const options = useMemo(() => {
+    const values = Object.values(UserType) as string[];
+    const result = [];
+    for (let i = 0; i < values.length / 2; i++) {
+      result.push({
+        label: `${values[i][0]}${values[i].slice(1).toLowerCase()}`,
+        value: i + 1,
+      });
+    }
+    return result;
+  }, []);
+
   return (
     <div className="w-full h-full flex flex-col justify-center lg:w-1/2 mx-auto">
       <Typography.Title
@@ -41,9 +52,24 @@ export default function Register() {
         >
           <Input.Password />
         </Form.Item>
+        <Form.Item
+          label="Type"
+          name="type"
+          rules={[{ required: true, message: "Please select a type!" }]}
+        >
+          <Radio.Group
+            optionType="button"
+            buttonStyle="solid"
+            defaultValue={options[0].value}
+          >
+            {options.map((option) => (
+              <Radio value={option.value}>{option.label}</Radio>
+            ))}
+          </Radio.Group>
+        </Form.Item>
         <Form.Item className="flex justify-end">
           <Typography.Text className="text-xs">
-            Already a user?{" "}
+            Already a staff?{" "}
             <Link to={"/auth/login"}>
               <span className="underline font-bold">login</span>
             </Link>
@@ -57,16 +83,6 @@ export default function Register() {
             Submit
           </Button>
         </Form.Item>
-        <div className="flex">
-          <div className="w-1/2 p-2 m-2 rounded-lg flex items-center justify-center bg-red-500 text-white cursor-pointer transition-all duration-500 hover:opacity-70">
-            <AiFillGoogleSquare className="mr-2" />
-            <span className="text-xs">Google</span>
-          </div>
-          <div className="w-1/2 p-2 m-2 rounded-lg flex items-center justify-center bg-blue-500 text-white cursor-pointer transition-all duration-500 hover:opacity-70">
-            <AiFillFacebook className="mr-2" />
-            <span className="text-xs">Facebook</span>
-          </div>
-        </div>
       </Form>
     </div>
   );

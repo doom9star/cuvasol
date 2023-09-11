@@ -1,16 +1,15 @@
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import Base from "./Base";
-import { EmployeeType } from "../lib/types/model";
+import { EmployeeRole } from "../lib/types/model";
 import User from "./User";
 
 @Entity("employee")
 export default class Employee extends Base {
   @Column({
     type: "enum",
-    enum: EmployeeType,
-    default: EmployeeType.CONSULTANT,
+    enum: EmployeeRole,
   })
-  type: EmployeeType;
+  role: EmployeeRole;
 
   @Column({ default: 0 })
   salary: number;

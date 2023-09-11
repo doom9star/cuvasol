@@ -22,9 +22,19 @@
       }
     },
     {
+      "label": "mysql",
+      "type": "process",
+      "command": "./.vscode/setup.sh",
+      "args": ["mysql"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
       "label": "setup",
       "group": "test",
-      "dependsOn": ["backend", "frontend"],
+      "dependsOn": ["backend", "frontend", "mysql"],
       "dependsOrder": "parallel"
     }
   ]

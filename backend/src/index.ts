@@ -14,6 +14,7 @@ import File from "./entities/File";
 import Employee from "./entities/Employee";
 import Task from "./entities/Task";
 import Report from "./entities/Report";
+import Group from "./entities/Group";
 
 const main = async () => {
   dotenv.config({ path: path.join(__dirname, "../.env") });
@@ -25,7 +26,7 @@ const main = async () => {
     username: <any>process.env.DB_USER,
     password: <any>process.env.DB_PASS,
     database: <any>process.env.DB_NAME,
-    entities: [User, Employee, Task, Report, File],
+    entities: [User, Group, Employee, Task, Report, File],
     synchronize: true,
     logging: true,
   }).initialize();

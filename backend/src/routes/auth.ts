@@ -14,8 +14,8 @@ import isAuth from "../middlewares/isAuth";
 import isNotAuth from "../middlewares/isNotAuth";
 import { v4 } from "uuid";
 import { log } from "../lib/utils/logging";
-import { UserType } from "../lib/types/model";
 import Employee from "../entities/Employee";
+import { UserRole } from "../lib/types/model";
 
 const router = Router();
 
@@ -37,7 +37,7 @@ router.post(
       const { tid } = req.params;
       const { password } = req.body;
 
-      const uid = req.redclient.get(
+      const uid = await req.redclient.get(
         `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`
       );
 
@@ -69,46 +69,33 @@ router.post("/register", isNotAuth, async (req: TAuthRequest, res) => {
       name,
       email,
       password,
-      type,
+      role,
       location,
       phoneNumber,
       birthDate,
-      linkedinURL,
-      githubURL,
+      urls,
     } = req.body;
 
     const user = await User.create({
       name,
       email,
       password,
-      type,
       location,
       phoneNumber,
       birthDate,
-      linkedinURL,
-      githubURL,
+      urls,
     }).save();
 
-    if (type === UserType.EMPLOYEE) {
+    if (role === UserRole.EMPLOYEE) {
       const {
-        employee: {
-          type,
-          salary,
-          startTime,
-          endTime,
-          joinedAt,
-          endedAt,
-          leftAt,
-        },
+        employee: { role, salary, startTime, endTime, joinedAt },
       } = req.body;
       await Employee.create({
-        type,
+        role,
         salary,
         startTime,
         endTime,
         joinedAt,
-        endedAt,
-        leftAt,
       }).save();
     }
 

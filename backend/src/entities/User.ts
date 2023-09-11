@@ -3,15 +3,17 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   OneToOne,
 } from "typeorm";
 import bcrypt from "bcryptjs";
 import Base from "./Base";
 import File from "./File";
-import { UserType } from "../lib/types/model";
 import Report from "./Report";
 import Employee from "./Employee";
+import Group from "./Group";
 
 @Entity("user")
 export default class User extends Base {
@@ -28,9 +30,6 @@ export default class User extends Base {
   @JoinColumn()
   avatar: File;
 
-  @Column({ type: "enum", enum: UserType, default: UserType.EMPLOYEE })
-  type: UserType;
-
   @Column()
   location: string;
 
@@ -40,17 +39,18 @@ export default class User extends Base {
   @Column("datetime")
   birthDate: Date;
 
-  @Column({ nullable: true })
-  linkedinURL: string;
-
-  @Column({ nullable: true })
-  githubURL: string;
+  @Column({ type: "simple-array", nullable: true })
+  urls: string[];
 
   @Column({ default: false })
   activated: boolean;
 
   @OneToMany(() => Report, (report) => report.user, { cascade: true })
   reports: Report[];
+
+  @ManyToMany(() => Group, (g) => g.members)
+  @JoinTable({ name: "users_groups" })
+  groups: Group[];
 
   @BeforeInsert()
   async hashPassword() {

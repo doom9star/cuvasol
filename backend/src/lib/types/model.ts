@@ -1,10 +1,11 @@
-export enum UserType {
-  DIRECTOR = 1,
-  CLIENT = 2,
-  EMPLOYEE = 3,
+export enum UserRole {
+  ADMIN = 1,
+  DIRECTOR = 2,
+  CLIENT = 3,
+  EMPLOYEE = 4,
 }
 
-export enum EmployeeType {
+export enum EmployeeRole {
   CONSULTANT = 1,
   INTERN = 2,
 }
