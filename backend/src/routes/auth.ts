@@ -16,6 +16,7 @@ import { v4 } from "uuid";
 import { log } from "../lib/utils/logging";
 import Employee from "../entities/Employee";
 import { UserType } from "../lib/types/model";
+import isMember from "../middlewares/isMember";
 
 const router = Router();
 
@@ -63,54 +64,59 @@ router.post(
   }
 );
 
-router.post("/register", isNotAuth, async (req: TAuthRequest, res) => {
-  try {
-    const {
-      name,
-      email,
-      password,
-      type,
-      location,
-      phoneNumber,
-      birthDate,
-      urls,
-    } = req.body;
-
-    const user = await User.create({
-      name,
-      email,
-      password,
-      location,
-      phoneNumber,
-      birthDate,
-      urls,
-    }).save();
-
-    if (type === UserType.EMPLOYEE) {
+router.post(
+  "/register",
+  isAuth,
+  isMember(UserType.ADMIN),
+  async (req: TAuthRequest, res) => {
+    try {
       const {
-        employee: { type, salary, startTime, endTime, joinedAt },
-      } = req.body;
-      await Employee.create({
+        name,
+        email,
+        password,
         type,
-        salary,
-        startTime,
-        endTime,
-        joinedAt,
+        location,
+        phoneNumber,
+        birthDate,
+        urls,
+      } = req.body;
+
+      const user = await User.create({
+        name,
+        email,
+        password,
+        location,
+        phoneNumber,
+        birthDate,
+        urls,
       }).save();
+
+      if (type === UserType.EMPLOYEE) {
+        const {
+          employee: { type, salary, startTime, endTime, joinedAt },
+        } = req.body;
+        await Employee.create({
+          type,
+          salary,
+          startTime,
+          endTime,
+          joinedAt,
+        }).save();
+      }
+
+      const tid = v4();
+      const key = `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`;
+      const url = `${process.env.CLIENT}/auth/activate-account/${key}`;
+      await req.redclient.set(key, user.id);
+
+      res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
+      return res.json(getResponse(200, url));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
     }
-
-    const tid = v4();
-    const key = `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`;
-    const url = `${process.env.CLIENT}/auth/activate-account/${key}`;
-    await req.redclient.set(key, user.id);
-
-    res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
-    return res.json(getResponse(200, url));
-  } catch (error: any) {
-    log("ERROR", error.message);
-    return res.json(getResponse(500, error.message));
   }
-});
+);
 
 router.post("/login", isNotAuth, async (req, res) => {
   try {

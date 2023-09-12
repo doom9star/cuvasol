@@ -9,6 +9,7 @@ import { TAuthRequest } from "./lib/types";
 import { log } from "./lib/utils/logging";
 import { DS } from "./ormconfig";
 import MainRouter from "./routes";
+import TCP from "tcp-port-used";
 
 const main = async () => {
   dotenv.config({ path: path.join(__dirname, "../.env") });
@@ -27,9 +28,14 @@ const main = async () => {
   });
   app.use("/", MainRouter);
 
-  app.listen(process.env.PORT, () => {
+  const used = await TCP.check({ port: parseInt(process.env.PORT as string) });
+  if (!used) {
+    app.listen(process.env.PORT, () => {
+      log("INFO", `server running on http://localhost:${process.env.PORT}!`);
+    });
+  } else {
     log("INFO", `server running on http://localhost:${process.env.PORT}!`);
-  });
+  }
 };
 
 main();
