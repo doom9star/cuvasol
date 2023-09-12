@@ -15,8 +15,9 @@ import isNotAuth from "../middlewares/isNotAuth";
 import { v4 } from "uuid";
 import { log } from "../lib/utils/logging";
 import Employee from "../entities/Employee";
-import { UserType } from "../lib/types/model";
-import isMember from "../middlewares/isMember";
+import { PermissionType, UserType } from "../lib/types/model";
+import hasPerm from "../middlewares/hasPerm";
+import Group from "../entities/Group";
 
 const router = Router();
 
@@ -67,7 +68,11 @@ router.post(
 router.post(
   "/register",
   isAuth,
-  isMember(UserType.ADMIN),
+  hasPerm([
+    PermissionType.MANAGE_ALL,
+    PermissionType.MANAGE_CLIENT,
+    PermissionType.MANAGE_EMPLOYEE,
+  ]),
   async (req: TAuthRequest, res) => {
     try {
       const {
@@ -75,6 +80,7 @@ router.post(
         email,
         password,
         type,
+        designation,
         location,
         phoneNumber,
         birthDate,
@@ -86,6 +92,7 @@ router.post(
         email,
         password,
         location,
+        designation,
         phoneNumber,
         birthDate,
         urls,
@@ -104,12 +111,19 @@ router.post(
         }).save();
       }
 
+      const group = await Group.findOne({
+        where: { name: type },
+      });
+      await Group.createQueryBuilder("group")
+        .relation("members")
+        .of(group)
+        .add(user);
+
       const tid = v4();
       const key = `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`;
       const url = `${process.env.CLIENT}/auth/activate-account/${key}`;
       await req.redclient.set(key, user.id);
 
-      res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
       return res.json(getResponse(200, url));
     } catch (error: any) {
       log("ERROR", error.message);
@@ -193,5 +207,34 @@ router.post("/reset-password/:tid", isAuth, async (req: TAuthRequest, res) => {
     return res.json(getResponse(500, error.message));
   }
 });
+
+router.post(
+  "/permission",
+  isAuth,
+  hasPerm([PermissionType.MANAGE_ALL]),
+  async (req: TAuthRequest, res) => {
+    try {
+      const { operation, group, permissions } = req.body;
+      const g = await Group.findOne(group);
+
+      if (operation === "A") {
+        await Group.createQueryBuilder("group")
+          .relation("permissions")
+          .of(g)
+          .add(permissions);
+      } else if (operation === "R") {
+        await Group.createQueryBuilder("group")
+          .relation("permissions")
+          .of(g)
+          .remove(permissions);
+      }
+
+      return res.json(getResponse(200));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
+    }
+  }
+);
 
 export default router;

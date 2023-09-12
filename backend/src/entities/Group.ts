@@ -13,6 +13,6 @@ export default class Group extends Base {
   members: User[];
 
   @ManyToMany(() => Permission, (p) => p.groups, { cascade: true })
-  @JoinTable({ name: "groups_permissons" })
+  @JoinTable({ name: "groups_permissions" })
   permissions: Permission[];
 }

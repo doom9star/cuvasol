@@ -16,6 +16,6 @@ export enum PermissionType {
 }
 
 export enum EmployeeType {
-  CONSULTANT = 1,
-  INTERN = 2,
+  CONSULTANT = "CONSULTANT",
+  INTERN = "EMPLOYEE",
 }

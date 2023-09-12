@@ -10,8 +10,9 @@ import File from "./entities/File";
 import path from "path";
 import { AddPerm1694507747431 } from "./migrations/1694507747431-AddPerm";
 import { AddGrp1694507939389 } from "./migrations/1694507939389-AddGrp";
-import { PermAdmin1694512553603 } from "./migrations/1694512553603-PermAdmin";
 import { AddAdmin1694514949472 } from "./migrations/1694514949472-AddAdmin";
+import { AllowAdmin1694512553603 } from "./migrations/1694512553603-AllowAdmin";
+import { PermAdmin1694520302274 } from "./migrations/1694520302274-PermAdmin";
 
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
@@ -26,8 +27,9 @@ export const DS = new DataSource({
   migrations: [
     AddPerm1694507747431,
     AddGrp1694507939389,
-    PermAdmin1694512553603,
+    AllowAdmin1694512553603,
     AddAdmin1694514949472,
+    PermAdmin1694520302274,
   ],
   migrationsRun: true,
   synchronize: false,
