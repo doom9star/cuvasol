@@ -1,16 +1,18 @@
-import { Column, Entity, ManyToMany } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from "typeorm";
 import Base from "./Base";
 import User from "./User";
-import { UserRole } from "../lib/types/model";
+import { UserType } from "../lib/types/model";
+import Permission from "./Permission";
 
 @Entity("group")
 export default class Group extends Base {
-  @Column({ type: "enum", enum: UserRole })
-  name: UserRole;
+  @Column({ type: "enum", enum: UserType })
+  name: UserType;
 
   @ManyToMany(() => User, (u) => u.groups, { cascade: true })
   members: User[];
 
-  @Column("simple-array", { nullable: true })
-  permissions: string[];
+  @ManyToMany(() => Permission, (p) => p.groups, { cascade: true })
+  @JoinTable({ name: "groups_permissons" })
+  permissions: Permission[];
 }

@@ -32,9 +32,19 @@
       }
     },
     {
+      "label": "redis",
+      "type": "process",
+      "command": "./.vscode/setup.sh",
+      "args": ["redis"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
       "label": "setup",
       "group": "test",
-      "dependsOn": ["backend", "frontend", "mysql"],
+      "dependsOn": ["backend", "frontend", "mysql", "redis"],
       "dependsOrder": "parallel"
     }
   ]

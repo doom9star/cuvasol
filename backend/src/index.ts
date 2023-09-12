@@ -1,36 +1,19 @@
+import "reflect-metadata";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express from "express";
 import path from "path";
-import "reflect-metadata";
-import { DataSource } from "typeorm";
-import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
-import User from "./entities/User";
-import MainRouter from "./routes";
 import { createClient } from "redis";
 import { TAuthRequest } from "./lib/types";
 import { log } from "./lib/utils/logging";
-import File from "./entities/File";
-import Employee from "./entities/Employee";
-import Task from "./entities/Task";
-import Report from "./entities/Report";
-import Group from "./entities/Group";
+import { DS } from "./ormconfig";
+import MainRouter from "./routes";
 
 const main = async () => {
   dotenv.config({ path: path.join(__dirname, "../.env") });
 
-  await new DataSource({
-    type: <any>process.env.DB_TYPE,
-    host: <any>process.env.DB_HOST,
-    port: <any>process.env.DB_PORT,
-    username: <any>process.env.DB_USER,
-    password: <any>process.env.DB_PASS,
-    database: <any>process.env.DB_NAME,
-    entities: [User, Group, Employee, Task, Report, File],
-    synchronize: true,
-    logging: true,
-  }).initialize();
-
+  await DS.initialize();
   const app = express();
 
   const redclient = createClient();

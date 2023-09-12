@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --watch src --exec ts-node src/index.ts"
+    "start": "nodemon --watch src --exec ts-node src/index.ts",
+    "run-migration": "typeorm-ts-node-commonjs migration:run -d src/ormconfig.ts",
+    "show-migration": "typeorm-ts-node-commonjs migration:show -d src/ormconfig.ts"
   },
   "keywords": [],
   "author": "",

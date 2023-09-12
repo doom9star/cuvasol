@@ -13,6 +13,9 @@ then
 elif [ $1 = "mysql" ]
 then
     mysql -u karthik -pkarthik
+elif [ $1 = "redis" ]
+then
+    redis-cli
 else
     echo "REQUIRED ARG - backend|frontend"
 fi

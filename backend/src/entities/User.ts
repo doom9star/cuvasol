@@ -26,6 +26,9 @@ export default class User extends Base {
   @Column()
   password: string;
 
+  @Column()
+  designation: string;
+
   @OneToOne(() => File, { cascade: true, nullable: true })
   @JoinColumn()
   avatar: File;

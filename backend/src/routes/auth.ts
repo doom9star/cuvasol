@@ -15,7 +15,7 @@ import isNotAuth from "../middlewares/isNotAuth";
 import { v4 } from "uuid";
 import { log } from "../lib/utils/logging";
 import Employee from "../entities/Employee";
-import { UserRole } from "../lib/types/model";
+import { UserType } from "../lib/types/model";
 
 const router = Router();
 
@@ -69,7 +69,7 @@ router.post("/register", isNotAuth, async (req: TAuthRequest, res) => {
       name,
       email,
       password,
-      role,
+      type,
       location,
       phoneNumber,
       birthDate,
@@ -86,12 +86,12 @@ router.post("/register", isNotAuth, async (req: TAuthRequest, res) => {
       urls,
     }).save();
 
-    if (role === UserRole.EMPLOYEE) {
+    if (type === UserType.EMPLOYEE) {
       const {
-        employee: { role, salary, startTime, endTime, joinedAt },
+        employee: { type, salary, startTime, endTime, joinedAt },
       } = req.body;
       await Employee.create({
-        role,
+        type,
         salary,
         startTime,
         endTime,

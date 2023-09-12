@@ -1,11 +1,21 @@
-export enum UserRole {
-  ADMIN = 1,
-  DIRECTOR = 2,
-  CLIENT = 3,
-  EMPLOYEE = 4,
+export enum UserType {
+  ADMIN = "ADMIN",
+  MANAGER = "MANAGER",
+  CLIENT = "CLIENT",
+  EMPLOYEE = "EMPLOYEE",
 }
 
-export enum EmployeeRole {
+export enum PermissionType {
+  MANAGE_ALL = "MANAGE_ALL",
+  MANAGE_CLIENT = "MANAGE_CLIENT",
+  MANAGE_EMPLOYEE = "MANAGE_EMPLOYEE",
+  MANAGE_CONSULTANT = "MANAGE_CONSULTANT",
+  MANAGE_INTERN = "MANAGE_INTERN",
+  MANAGE_REPORT = "MANAGE_REPORT",
+  CREATE_REPORT = "CREATE_REPORT",
+}
+
+export enum EmployeeType {
   CONSULTANT = 1,
   INTERN = 2,
 }
