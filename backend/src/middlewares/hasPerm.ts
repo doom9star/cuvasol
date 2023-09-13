@@ -1,12 +1,12 @@
 import { NextFunction, Response } from "express";
 import User from "../entities/User";
-import { TAuthRequest } from "../lib/types";
+import { TRequest } from "../lib/types";
 import { PermissionType } from "../lib/types/model";
 import getResponse from "../lib/utils/getResponse";
 import { log } from "../lib/utils/logging";
 
 export default (types: PermissionType[]) => {
-  return async (req: TAuthRequest, res: Response, next: NextFunction) => {
+  return async (req: TRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user) return res.json(getResponse(401));
       const user = await User.createQueryBuilder("user")

@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import { createClient } from "redis";
-import { TAuthRequest } from "./lib/types";
+import { TRequest } from "./lib/types";
 import { log } from "./lib/utils/logging";
 import { DS } from "./ormconfig";
 import MainRouter from "./routes";
@@ -18,14 +18,14 @@ const main = async () => {
   await DS.initialize();
   const app = express();
 
-  const redclient = createClient();
-  await redclient.connect();
+  const cacher = createClient();
+  await cacher.connect();
 
   app.use(cors({ origin: process.env.CLIENT, credentials: true }));
   app.use(cookieParser());
   app.use(bodyParser.json());
-  app.use((req: TAuthRequest, _, next) => {
-    req.redclient = redclient;
+  app.use((req: TRequest, _, next) => {
+    req.cacher = cacher;
     next();
   });
   app.use("/", MainRouter);

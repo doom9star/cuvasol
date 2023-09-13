@@ -1,5 +1,8 @@
-import { Router } from "express";
 import bcrypt from "bcryptjs";
+import { Router } from "express";
+import { v4 } from "uuid";
+import Employee from "../entities/Employee";
+import Group from "../entities/Group";
 import User from "../entities/User";
 import {
   ACTIVATE_ACCOUNT_PREFIX,
@@ -7,21 +10,18 @@ import {
   COOKIE_NAME,
   FORGOT_PASSWORD_PREFIX,
 } from "../lib/constants";
-import { TAuthRequest } from "../lib/types";
+import { TRequest } from "../lib/types";
+import { UserType } from "../lib/types/model";
 import getResponse from "../lib/utils/getResponse";
 import getToken from "../lib/utils/getToken";
-import isAuth from "../middlewares/isAuth";
-import isNotAuth from "../middlewares/isNotAuth";
-import { v4 } from "uuid";
 import { log } from "../lib/utils/logging";
-import Employee from "../entities/Employee";
-import { PermissionType, UserType } from "../lib/types/model";
-import hasPerm from "../middlewares/hasPerm";
-import Group from "../entities/Group";
+import isAuth from "../middlewares/isAuth";
+import isMember from "../middlewares/isMember";
+import isNotAuth from "../middlewares/isNotAuth";
 
 const router = Router();
 
-router.get("/", isAuth, async (req: TAuthRequest, res) => {
+router.get("/", isAuth, async (req: TRequest, res) => {
   try {
     const user = await User.findOne({ where: { id: req.user?.id } });
     return res.json(getResponse(200, user));
@@ -31,49 +31,41 @@ router.get("/", isAuth, async (req: TAuthRequest, res) => {
   }
 });
 
-router.post(
-  "/activate-account/:tid",
-  isNotAuth,
-  async (req: TAuthRequest, res) => {
-    try {
-      const { tid } = req.params;
-      const { password } = req.body;
+router.post("/activate-account/:tid", isNotAuth, async (req: TRequest, res) => {
+  try {
+    const { tid } = req.params;
+    const { password } = req.body;
 
-      const uid = await req.redclient.get(
-        `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`
-      );
+    const uid = await req.cacher.get(
+      `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`
+    );
 
-      const user = await User.findOne({ where: { id: uid } });
-      if (!user) return res.json(getResponse(404));
+    const user = await User.findOne({ where: { id: uid } });
+    if (!user) return res.json(getResponse(404));
 
-      if (user.activated)
-        return res.json(getResponse(400, "Account already activated!"));
+    if (user.activated)
+      return res.json(getResponse(400, "Account already activated!"));
 
-      const authorized = await user.checkPassword(password);
-      if (!authorized) return res.json(getResponse(401, "Wrong credentials!"));
+    const authorized = await user.checkPassword(password);
+    if (!authorized) return res.json(getResponse(401, "Wrong credentials!"));
 
-      user.activated = true;
-      await user.save();
+    user.activated = true;
+    await user.save();
 
-      await req.redclient.del(`${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`);
+    await req.cacher.del(`${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`);
 
-      return res.json(getResponse(200));
-    } catch (error: any) {
-      log("ERROR", error.message);
-      return res.json(getResponse(500, error.message));
-    }
+    return res.json(getResponse(200));
+  } catch (error: any) {
+    log("ERROR", error.message);
+    return res.json(getResponse(500, error.message));
   }
-);
+});
 
 router.post(
   "/register",
   isAuth,
-  hasPerm([
-    PermissionType.MANAGE_ALL,
-    PermissionType.MANAGE_CLIENT,
-    PermissionType.MANAGE_EMPLOYEE,
-  ]),
-  async (req: TAuthRequest, res) => {
+  isMember([UserType.ADMIN, UserType.MANAGER], "any"),
+  async (req: TRequest, res) => {
     try {
       const {
         name,
@@ -86,6 +78,15 @@ router.post(
         birthDate,
         urls,
       } = req.body;
+
+      if (
+        !req.groups?.includes(UserType.ADMIN) &&
+        ![UserType.EMPLOYEE, UserType.CLIENT].includes(type)
+      ) {
+        return res.json(
+          getResponse(400, "MANAGER can only create employees/clients!")
+        );
+      }
 
       const user = await User.create({
         name,
@@ -108,6 +109,7 @@ router.post(
           startTime,
           endTime,
           joinedAt,
+          user,
         }).save();
       }
 
@@ -122,7 +124,7 @@ router.post(
       const tid = v4();
       const key = `${APP_PREFIX}${ACTIVATE_ACCOUNT_PREFIX}${tid}`;
       const url = `${process.env.CLIENT}/auth/activate-account/${key}`;
-      await req.redclient.set(key, user.id);
+      await req.cacher.set(key, user.id);
 
       return res.json(getResponse(200, url));
     } catch (error: any) {
@@ -132,26 +134,80 @@ router.post(
   }
 );
 
-router.post("/login", isNotAuth, async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({
-      where: { email: email },
-    });
+router.post(
+  "/login",
+  isNotAuth,
+  isMember(
+    [UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER, UserType.CLIENT],
+    "any"
+  ),
+  async (req: TRequest, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({
+        where: { email: email },
+      });
 
-    if (!user) return res.json(getResponse(404));
-    if (!user.activated)
-      return res.json(getResponse(400, "Account must be activated!"));
-    if (!(await user.checkPassword(password)))
-      return res.json(getResponse(401, "Wrong credentials!"));
+      if (!user) return res.json(getResponse(404));
+      if (!user.activated)
+        return res.json(getResponse(400, "Account must be activated!"));
+      if (!(await user.checkPassword(password)))
+        return res.json(getResponse(401, "Wrong credentials!"));
 
-    res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
-    return res.json(getResponse(200, user));
-  } catch (error: any) {
-    log("ERROR", error.message);
-    return res.json(getResponse(500, error.message));
+      if (req.groups?.includes(UserType.EMPLOYEE)) {
+        const employee = await Employee.findOne({
+          where: { user: { id: user.id } },
+        });
+
+        if (!employee) return res.json(getResponse(404, "Employee not found!"));
+
+        if (employee.leftAt)
+          return res.json(
+            getResponse(400, "You are no longer part of the company!")
+          );
+
+        const now = new Date();
+
+        if (employee.endedAt && employee.endedAt.getTime() <= now.getTime())
+          return res.json(
+            getResponse(
+              400,
+              "Your employee contract has expired, please contact the support!"
+            )
+          );
+
+        const startTime = new Date();
+        startTime.setHours(
+          employee.startTime.getHours(),
+          employee.startTime.getMinutes()
+        );
+
+        const endTime = new Date();
+        endTime.setHours(
+          employee.endTime.getHours() - 1,
+          employee.endTime.getMinutes()
+        );
+
+        if (
+          now.getTime() >= startTime.getTime() &&
+          now.getTime() < endTime.getTime()
+        ) {
+          user.employee = employee;
+        } else {
+          return res.json(
+            getResponse(401, "You can only login within your working period!")
+          );
+        }
+      }
+
+      res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
+      return res.json(getResponse(200, user));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
+    }
   }
-});
+);
 
 router.delete("/logout", isAuth, async (_, res) => {
   try {
@@ -163,7 +219,7 @@ router.delete("/logout", isAuth, async (_, res) => {
   }
 });
 
-router.post("/forgot-password", isAuth, async (req: TAuthRequest, res) => {
+router.post("/forgot-password", isAuth, async (req: TRequest, res) => {
   try {
     const { email } = req.body;
 
@@ -175,7 +231,7 @@ router.post("/forgot-password", isAuth, async (req: TAuthRequest, res) => {
     const tid = v4();
     const key = `${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`;
     const url = `${process.env.CLIENT}/auth/reset-password/${key}`;
-    await req.redclient.set(key, user.id);
+    await req.cacher.set(key, user.id);
 
     return res.json(getResponse(200, url));
   } catch (error: any) {
@@ -184,11 +240,11 @@ router.post("/forgot-password", isAuth, async (req: TAuthRequest, res) => {
   }
 });
 
-router.post("/reset-password/:tid", isAuth, async (req: TAuthRequest, res) => {
+router.post("/reset-password/:tid", isAuth, async (req: TRequest, res) => {
   try {
     const { tid } = req.params;
 
-    const uid = await req.redclient.get(
+    const uid = await req.cacher.get(
       `${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`
     );
     const { password } = req.body;
@@ -199,7 +255,7 @@ router.post("/reset-password/:tid", isAuth, async (req: TAuthRequest, res) => {
     user.password = await bcrypt.hash(password, 12);
     user.save();
 
-    await req.redclient.del(`${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`);
+    await req.cacher.del(`${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`);
 
     return res.json(getResponse(200));
   } catch (error: any) {
@@ -211,8 +267,8 @@ router.post("/reset-password/:tid", isAuth, async (req: TAuthRequest, res) => {
 router.post(
   "/permission",
   isAuth,
-  hasPerm([PermissionType.MANAGE_ALL]),
-  async (req: TAuthRequest, res) => {
+  isMember([UserType.ADMIN], "all"),
+  async (req: TRequest, res) => {
     try {
       const { operation, group, permissions } = req.body;
       const g = await Group.findOne(group);

@@ -2,11 +2,11 @@ import { NextFunction, Response } from "express";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 
 import { APP_PREFIX, COOKIE_NAME } from "../lib/constants";
-import { TAuthRequest, TPayload } from "../lib/types";
+import { TRequest, TPayload } from "../lib/types";
 import getResponse from "../lib/utils/getResponse";
 import { log } from "../lib/utils/logging";
 
-export default (req: TAuthRequest, res: Response, next: NextFunction) => {
+export default (req: TRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.cookies[`${APP_PREFIX}${COOKIE_NAME}`])
       throw new JsonWebTokenError("Token is missing!");

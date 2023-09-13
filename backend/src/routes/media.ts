@@ -2,7 +2,7 @@ import { v2 } from "cloudinary";
 import { Router } from "express";
 import multer from "multer";
 import isAuth from "../middlewares/isAuth";
-import { TAuthRequest } from "../lib/types";
+import { TRequest } from "../lib/types";
 import User from "../entities/User";
 import getResponse from "../lib/utils/getResponse";
 import getImageData from "../lib/utils/getImageData";
@@ -34,7 +34,7 @@ router.post(
   "/avatar",
   isAuth,
   uploader.single("image"),
-  async (req: TAuthRequest, res) => {
+  async (req: TRequest, res) => {
     const user = await User.findOne({
       where: { id: req.user?.id },
       relations: ["avatar"],
