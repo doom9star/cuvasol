@@ -1,10 +1,10 @@
 const responses: Record<number, string> = {
-  200: "Request Successfull!",
-  201: "Resource Created!",
-  401: "Request Unauthorized!",
-  404: "Resource Not Found!",
-  500: "Internal Server Error!",
-  400: "Request Refused!",
+  200: "Request successfull!",
+  201: "Resource created!",
+  401: "Request unauthorized!",
+  404: "Resource not found!",
+  500: "Internal server error!",
+  400: "Request refused!",
 };
 
 export default function getResponse(status: number, data?: any) {

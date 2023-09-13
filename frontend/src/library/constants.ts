@@ -1,6 +1,6 @@
 import axios from "axios";
 
 export const cAxios = axios.create({
-  baseURL: process.env.BACKEND,
+  baseURL: process.env.REACT_APP_BACKEND,
   withCredentials: true,
 });

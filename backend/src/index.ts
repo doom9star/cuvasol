@@ -10,6 +10,7 @@ import { log } from "./lib/utils/logging";
 import { DS } from "./ormconfig";
 import MainRouter from "./routes";
 import TCP from "tcp-port-used";
+import cors from "cors";
 
 const main = async () => {
   dotenv.config({ path: path.join(__dirname, "../.env") });
@@ -20,6 +21,7 @@ const main = async () => {
   const redclient = createClient();
   await redclient.connect();
 
+  app.use(cors({ origin: process.env.CLIENT, credentials: true }));
   app.use(cookieParser());
   app.use(bodyParser.json());
   app.use((req: TAuthRequest, _, next) => {

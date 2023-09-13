@@ -16,29 +16,29 @@ function ActivateAccount() {
 
   const activateAccount = useCallback(
     (values: any) => {
-      cAxios
-        .post(`/auth/activate-account/${params.tid}`, values)
-        .then((res) => {
-          if (res.data.status === 200) {
-            navigate("/auth/login");
-            dispatch(
-              setAlert({
-                type: "success",
-                message: "Account Activation!",
-                description:
-                  "Account has been successfully activated. You can login now!",
-              })
-            );
-          } else {
-            dispatch(
-              setAlert({
-                type: "error",
-                message: "Account Activation!",
-                description: `Account activation failed. ${res.data.message}`,
-              })
-            );
-          }
-        });
+      cAxios.post(`auth/activate-account/${params.tid}`, values).then((res) => {
+        if (res.data.status === 200) {
+          navigate("/auth/login");
+          dispatch(
+            setAlert({
+              type: "success",
+              message: "Account Activation!",
+              description:
+                "Account has been successfully activated. You can login now!",
+            })
+          );
+        } else {
+          dispatch(
+            setAlert({
+              type: "error",
+              message: "Account Activation!",
+              description: `Account activation failed. ${res.data.message}, ${
+                res.data.body ? res.data.body : ""
+              }`,
+            })
+          );
+        }
+      });
     },
     [params.tid, navigate, dispatch]
   );

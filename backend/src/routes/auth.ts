@@ -33,7 +33,7 @@ router.get("/", isAuth, async (req: TAuthRequest, res) => {
 
 router.post(
   "/activate-account/:tid",
-  isAuth,
+  isNotAuth,
   async (req: TAuthRequest, res) => {
     try {
       const { tid } = req.params;
@@ -50,7 +50,7 @@ router.post(
         return res.json(getResponse(400, "Account already activated!"));
 
       const authorized = await user.checkPassword(password);
-      if (!authorized) return res.json(getResponse(401));
+      if (!authorized) return res.json(getResponse(401, "Wrong credentials!"));
 
       user.activated = true;
       await user.save();
