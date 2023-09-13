@@ -11,6 +11,9 @@ export default class Report extends Base {
   @Column({ default: false })
   submitted: boolean;
 
+  @Column({ default: false })
+  approved: boolean;
+
   @Column({ type: "datetime", nullable: true })
   submittedAt: Date;
 

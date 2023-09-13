@@ -12,6 +12,41 @@ import { APP_PREFIX, COOKIE_NAME } from "../lib/constants";
 
 const router = Router();
 
+router.get(
+  "/",
+  isAuth,
+  isMember([UserType.ADMIN, UserType.MANAGER], "any"),
+  async (_, res) => {
+    try {
+      const reports = await Report.find({
+        order: { createdAt: "DESC" },
+      });
+      return res.json(getResponse(200, reports));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
+    }
+  }
+);
+
+router.get(
+  "/:rid",
+  isAuth,
+  isMember([UserType.ADMIN, UserType.MANAGER], "any"),
+  async (req: TRequest, res) => {
+    try {
+      const report = await Report.findOne({
+        where: { id: req.params.rid },
+        relations: ["user", "tasks"],
+      });
+      return res.json(getResponse(200, report));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
+    }
+  }
+);
+
 router.post(
   "/",
   isAuth,
@@ -35,6 +70,26 @@ router.post(
       await report.save();
 
       return res.json(getResponse(200, report));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
+    }
+  }
+);
+
+router.put(
+  "/:rid/approve",
+  isAuth,
+  isMember([UserType.ADMIN, UserType.MANAGER], "any"),
+  async (req: TRequest, res) => {
+    try {
+      const report = await Report.findOne({ where: { id: req.params.rid } });
+      if (!report) return res.json(getResponse(404));
+
+      report.approved = true;
+      await report.save();
+
+      return res.json(getResponse(200));
     } catch (error: any) {
       log("ERROR", error.message);
       return res.json(getResponse(500, error.message));
