@@ -18,6 +18,8 @@ import { log } from "../lib/utils/logging";
 import isAuth from "../middlewares/isAuth";
 import isMember from "../middlewares/isMember";
 import isNotAuth from "../middlewares/isNotAuth";
+import canEmployee from "../middlewares/canEmployee";
+import Report from "../entities/Report";
 
 const router = Router();
 
@@ -141,6 +143,7 @@ router.post(
     [UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER, UserType.CLIENT],
     "any"
   ),
+  canEmployee(false),
   async (req: TRequest, res) => {
     try {
       const { email, password } = req.body;
@@ -161,43 +164,21 @@ router.post(
 
         if (!employee) return res.json(getResponse(404, "Employee not found!"));
 
-        if (employee.leftAt)
-          return res.json(
-            getResponse(400, "You are no longer part of the company!")
-          );
+        const hasReported = await Report.createQueryBuilder("report")
+          .leftJoin("report.user", "user")
+          .where("user.id = :uid", { uid: user.id })
+          .andWhere("report.submittedAt = CURDATE()")
+          .getOne();
 
-        const now = new Date();
-
-        if (employee.endedAt && employee.endedAt.getTime() <= now.getTime())
+        if (hasReported)
           return res.json(
             getResponse(
-              400,
-              "Your employee contract has expired, please contact the support!"
+              401,
+              "You have already submitted your report for today!"
             )
           );
 
-        const startTime = new Date();
-        startTime.setHours(
-          employee.startTime.getHours(),
-          employee.startTime.getMinutes()
-        );
-
-        const endTime = new Date();
-        endTime.setHours(
-          employee.endTime.getHours() - 1,
-          employee.endTime.getMinutes()
-        );
-
-        if (
-          now.getTime() >= startTime.getTime() &&
-          now.getTime() < endTime.getTime()
-        ) {
-          user.employee = employee;
-        } else {
-          return res.json(
-            getResponse(401, "You can only login within your working period!")
-          );
-        }
+        user.employee = employee;
       }
 
       res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
