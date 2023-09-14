@@ -1,7 +1,13 @@
 export enum UserType {
-  DIRECTOR = 1,
-  CLIENT = 2,
-  EMPLOYEE = 3,
+  ADMIN = "ADMIN",
+  MANAGER = "MANAGER",
+  CLIENT = "CLIENT",
+  EMPLOYEE = "EMPLOYEE",
+}
+
+export enum EmployeeType {
+  CONSULTANT = "CONSULTANT",
+  INTERN = "EMPLOYEE",
 }
 
 interface ICommon {
@@ -13,4 +19,40 @@ interface ICommon {
 export interface IUser extends ICommon {
   name: string;
   email: string;
+  designation: string;
+  location: string;
+  phoneNumber: string;
+  birthDate: Date;
+  urls: string[];
+  groups: IGroup[];
+  employee?: IEmployee;
+}
+
+export interface IGroup extends ICommon {
+  name: UserType;
+}
+
+export interface IEmployee extends ICommon {
+  type: EmployeeType;
+  salary: number;
+  startTime: Date;
+  endTime: Date;
+  joinedAt: Date;
+  endedAt: Date | null;
+  leftAt: Date | null;
+  report?: IReport;
+}
+
+export interface IReport extends ICommon {
+  summary: string;
+  submitted: boolean;
+  approved: boolean;
+  submittedAt: Date | null;
+  tasks: ITask[];
+}
+
+export interface ITask extends ICommon {
+  name: string;
+  description: string;
+  completed: boolean;
 }

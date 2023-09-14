@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import Base from "./Base";
 import { EmployeeType } from "../lib/types/model";
 import User from "./User";
+import Report from "./Report";
 
 @Entity("employee")
 export default class Employee extends Base {
@@ -32,4 +33,6 @@ export default class Employee extends Base {
   @OneToOne(() => User)
   @JoinColumn()
   user: User;
+
+  report?: Report;
 }

@@ -21,7 +21,7 @@ export default (types: UserType[], type: "any" | "all") => {
       }
 
       const user = await query.getOne();
-      if (!user) return res.json(getResponse(401));
+      if (!user) return res.json(getResponse(404));
 
       const groups = user.groups.map((g) => g.name);
       if (

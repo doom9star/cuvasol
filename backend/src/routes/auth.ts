@@ -9,6 +9,7 @@ import {
   APP_PREFIX,
   COOKIE_NAME,
   FORGOT_PASSWORD_PREFIX,
+  WEEK,
 } from "../lib/constants";
 import { TRequest } from "../lib/types";
 import { UserType } from "../lib/types/model";
@@ -20,12 +21,35 @@ import isMember from "../middlewares/isMember";
 import isNotAuth from "../middlewares/isNotAuth";
 import canEmployee from "../middlewares/canEmployee";
 import Report from "../entities/Report";
+import { sendMail } from "../lib/utils/sendMail";
 
 const router = Router();
 
 router.get("/", isAuth, async (req: TRequest, res) => {
   try {
-    const user = await User.findOne({ where: { id: req.user?.id } });
+    const user = await User.findOne({
+      where: { id: req.user?.id },
+      relations: ["groups"],
+    });
+
+    if (!user) return res.json(getResponse(404));
+    if (user.groups.findIndex((g) => g.name === UserType.EMPLOYEE) !== -1) {
+      const employee = await Employee.findOne({
+        where: { user: { id: req.user?.id } },
+      });
+      if (!employee) return res.json(getResponse(404, "Employee not found!"));
+
+      const report = await Report.createQueryBuilder("report")
+        .leftJoin("report.user", "user")
+        .leftJoinAndSelect("report.tasks", "task")
+        .where("user.id = :uid", { uid: req.user?.id })
+        .andWhere("report.createdAt = CURDATE()")
+        .getOne();
+      if (report) employee.report = report;
+
+      user.employee = employee;
+    }
+
     return res.json(getResponse(200, user));
   } catch (error: any) {
     log("ERROR", error.message);
@@ -181,7 +205,9 @@ router.post(
         user.employee = employee;
       }
 
-      res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }));
+      res.cookie(`${APP_PREFIX}${COOKIE_NAME}`, getToken({ id: user.id }), {
+        maxAge: WEEK * 1000,
+      });
       return res.json(getResponse(200, user));
     } catch (error: any) {
       log("ERROR", error.message);
@@ -214,7 +240,32 @@ router.post("/forgot-password", isAuth, async (req: TRequest, res) => {
     const url = `${process.env.CLIENT}/auth/reset-password/${key}`;
     await req.cacher.set(key, user.id);
 
+    sendMail({
+      from: <any>process.env.MAILER_EMAIL,
+      to: user.email,
+      subject: "Cuvaosl | Reset password",
+      html: `Visit this url to reset your password: ${url}`,
+    });
+
     return res.json(getResponse(200, url));
+  } catch (error: any) {
+    log("ERROR", error.message);
+    return res.json(getResponse(500, error.message));
+  }
+});
+
+router.get("/reset-password/:tid", isAuth, async (req: TRequest, res) => {
+  try {
+    const { tid } = req.params;
+    const uid = await req.cacher.get(
+      `${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`
+    );
+    if (!uid) return res.json(getResponse(404));
+
+    const user = await User.findOne({ where: { id: uid } });
+    if (!user) return res.json(getResponse(404));
+
+    return res.json(getResponse(200));
   } catch (error: any) {
     log("ERROR", error.message);
     return res.json(getResponse(500, error.message));
@@ -228,6 +279,8 @@ router.post("/reset-password/:tid", isAuth, async (req: TRequest, res) => {
     const uid = await req.cacher.get(
       `${APP_PREFIX}${FORGOT_PASSWORD_PREFIX}${tid}`
     );
+    if (!uid) return res.json(getResponse(404));
+
     const { password } = req.body;
 
     const user = await User.findOne({ where: { id: uid } });

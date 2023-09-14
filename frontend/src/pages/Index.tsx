@@ -2,19 +2,24 @@ import { Button } from "antd";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useTitle } from "../hooks/useTitle";
+import { useGlobalState } from "../redux/slices/global";
+import { AiOutlineHome } from "react-icons/ai";
 
 export default function Index() {
   useTitle("Home");
+
   const navigate = useNavigate();
+  const { user } = useGlobalState();
+
   return (
     <div className="w-full h-full">
       <Button
         type="default"
         className="text-xs absolute top-8 right-8 z-10"
-        icon={<FiLogIn size={10} />}
-        onClick={() => navigate("/auth/login")}
+        icon={user ? <AiOutlineHome size={10} /> : <FiLogIn size={10} />}
+        onClick={() => navigate(user ? "/home" : "/auth/login")}
       >
-        Login
+        {user ? "Home" : "Login"}
       </Button>
       <div className="h-full flex justify-end">
         <img

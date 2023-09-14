@@ -22,7 +22,7 @@ function ActivateAccount() {
           dispatch(
             setAlert({
               type: "success",
-              message: "Account Activation!",
+              message: "Account activation success",
               description:
                 "Account has been successfully activated. You can login now!",
             })
@@ -31,10 +31,8 @@ function ActivateAccount() {
           dispatch(
             setAlert({
               type: "error",
-              message: "Account Activation!",
-              description: `Account activation failed. ${res.data.message}, ${
-                res.data.body ? res.data.body : ""
-              }`,
+              message: "Account activation failed",
+              description: res.data.body || res.data.message,
             })
           );
         }

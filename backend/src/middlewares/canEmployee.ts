@@ -39,16 +39,16 @@ export default (required: boolean) => {
           employee.endTime.getMinutes()
         );
 
-        if (
-          now.getTime() < startTime.getTime() ||
-          now.getTime() > endTime.getTime()
-        ) {
-          return res.json(
-            getResponse(401, "You can only login within your working period!")
-          );
-        }
+        // if (
+        //   now.getTime() < startTime.getTime() ||
+        //   now.getTime() > endTime.getTime()
+        // ) {
+        //   return res.json(
+        //     getResponse(401, "You can only login within your working period!")
+        //   );
+        // }
 
-        next();
+        return next();
       } else if (required)
         return res.json(getResponse(404, "Employee not found!"));
 
