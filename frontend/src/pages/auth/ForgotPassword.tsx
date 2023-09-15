@@ -3,7 +3,7 @@ import { AiOutlineMail } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { useTitle } from "../../hooks/useTitle";
 import { useCallback } from "react";
-import { cAxios } from "../../library/constants";
+import { cAxios } from "../../lib/constants";
 import { useDispatch } from "react-redux";
 import { setAlert } from "../../redux/slices/global";
 

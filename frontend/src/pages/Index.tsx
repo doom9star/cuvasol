@@ -1,13 +1,10 @@
 import { Button } from "antd";
+import { AiOutlineHome } from "react-icons/ai";
 import { FiLogIn } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { useTitle } from "../hooks/useTitle";
 import { useGlobalState } from "../redux/slices/global";
-import { AiOutlineHome } from "react-icons/ai";
 
 export default function Index() {
-  useTitle("Home");
-
   const navigate = useNavigate();
   const { user } = useGlobalState();
 

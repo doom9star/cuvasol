@@ -3,7 +3,7 @@ import { AiOutlineLock, AiOutlineMail } from "react-icons/ai";
 import { useTitle } from "../../hooks/useTitle";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCallback, useEffect } from "react";
-import { cAxios } from "../../library/constants";
+import { cAxios } from "../../lib/constants";
 import { useDispatch } from "react-redux";
 import { setAlert } from "../../redux/slices/global";
 
@@ -60,7 +60,7 @@ export default function ResetPassword() {
         );
       }
     });
-  }, [params]);
+  }, [params, navigate, dispatch]);
 
   return (
     <div className="w-full h-full flex flex-col justify-center lg:w-1/2 mx-auto">

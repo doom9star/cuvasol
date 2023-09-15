@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { cAxios } from "../../library/constants";
+import { cAxios } from "../../lib/constants";
 import { Button, Form, Input, Typography } from "antd";
 import { AiOutlineLock, AiOutlineMail } from "react-icons/ai";
 import { useTitle } from "../../hooks/useTitle";
