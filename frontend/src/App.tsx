@@ -14,6 +14,7 @@ import {
 import HomeRouter from "./pages/home";
 import { useEffect } from "react";
 import { cAxios } from "./lib/constants";
+import { setReport } from "./redux/slices/home";
 
 function App() {
   const { alert, loading } = useGlobalState();
@@ -25,6 +26,9 @@ function App() {
       .then((res) => {
         if (res.data.status === 200) {
           dispatch(setUser(res.data.body));
+          if (res.data.body.report) {
+            dispatch(setReport(res.data.body.report));
+          }
         }
       })
       .finally(() => {

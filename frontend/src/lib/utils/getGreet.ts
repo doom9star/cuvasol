@@ -4,5 +4,6 @@ export default function getGreet() {
 
   if (hour < 12) return "Good Morning";
   else if (hour < 18) return "Good Afternoon";
-  else return "Good Evening";
+  else if (hour < 21) return "Good Evening";
+  else return "Good Night";
 }
