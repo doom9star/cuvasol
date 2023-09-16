@@ -5,7 +5,7 @@ import User from "./User";
 
 @Entity("report")
 export default class Report extends Base {
-  @Column("text")
+  @Column("text", { nullable: true })
   summary: string;
 
   @Column({ default: false })

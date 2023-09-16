@@ -1,8 +1,10 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
+import { MoreThanOrEqual } from "typeorm";
 import { v4 } from "uuid";
 import Employee from "../entities/Employee";
 import Group from "../entities/Group";
+import Report from "../entities/Report";
 import User from "../entities/User";
 import {
   ACTIVATE_ACCOUNT_PREFIX,
@@ -16,12 +18,11 @@ import { UserType } from "../lib/types/model";
 import getResponse from "../lib/utils/getResponse";
 import getToken from "../lib/utils/getToken";
 import { log } from "../lib/utils/logging";
+import { sendMail } from "../lib/utils/sendMail";
+import canEmployee from "../middlewares/canEmployee";
 import isAuth from "../middlewares/isAuth";
 import isMember from "../middlewares/isMember";
 import isNotAuth from "../middlewares/isNotAuth";
-import canEmployee from "../middlewares/canEmployee";
-import Report from "../entities/Report";
-import { sendMail } from "../lib/utils/sendMail";
 
 const router = Router();
 
@@ -39,12 +40,14 @@ router.get("/", isAuth, async (req: TRequest, res) => {
       });
       if (!employee) return res.json(getResponse(404, "Employee not found!"));
 
-      const report = await Report.createQueryBuilder("report")
-        .leftJoin("report.user", "user")
-        .leftJoinAndSelect("report.tasks", "task")
-        .where("user.id = :uid", { uid: req.user?.id })
-        .andWhere("report.createdAt = CURDATE()")
-        .getOne();
+      const report = await Report.findOne({
+        where: {
+          user: { id: req.user?.id },
+          createdAt: <any>MoreThanOrEqual(new Date().toISOString()),
+        },
+        relations: ["tasks"],
+        order: { tasks: { createdAt: "ASC" } },
+      });
       if (report) employee.report = report;
 
       user.employee = employee;

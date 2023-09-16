@@ -174,15 +174,20 @@ router.delete(
 );
 
 router.put(
-  "/task/:tid/status",
+  "/task/:tid",
   isAuth,
   isMember([UserType.EMPLOYEE], "all"),
   canEmployee(true),
   async (req: TRequest, res) => {
     try {
-      const { status } = req.body;
-      await Task.update({ id: req.params.tid }, { completed: status === 1 });
-      return res.json(getResponse(200));
+      const task = await Task.findOne({ where: { id: req.params.tid } });
+      if (task) {
+        task.name = req.body.name;
+        task.description = req.body.description;
+        task.completed = req.body.completed;
+        await task.save();
+      }
+      return res.json(getResponse(200, task));
     } catch (error: any) {
       log("ERROR", error.message);
       return res.json(getResponse(500, error.message));

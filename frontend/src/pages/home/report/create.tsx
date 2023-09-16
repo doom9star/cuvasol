@@ -1,30 +1,33 @@
-import { useCallback, useEffect, useState } from "react";
-import { ITask } from "../../../types/models";
-import { v4 } from "uuid";
-import { setAlert, useGlobalState } from "../../../redux/slices/global";
-import { useDispatch } from "react-redux";
-import { cAxios } from "../../../lib/constants";
-import { setReport } from "../../../redux/slices/home";
-import getGreet from "../../../lib/utils/getGreet";
 import { Button, Form, Input } from "antd";
 import TextArea from "antd/es/input/TextArea";
+import { useCallback, useState } from "react";
 import {
   AiOutlineDelete,
   AiOutlineDown,
   AiOutlineLogin,
   AiOutlineUp,
 } from "react-icons/ai";
+import { useDispatch } from "react-redux";
+import { Navigate } from "react-router-dom";
+import { v4 } from "uuid";
+import Greet from "../../../components/Greet";
+import { useTitle } from "../../../hooks/useTitle";
+import { cAxios } from "../../../lib/constants";
+import { setAlert } from "../../../redux/slices/global";
+import { setReport, useHomeState } from "../../../redux/slices/home";
+import { ITask } from "../../../types/models";
 
 type Task = Pick<ITask, "id" | "name" | "description">;
 
 export default function CreateReport() {
+  useTitle("Report");
+
   const [tasks, setTasks] = useState<Task[]>([
     { id: v4(), name: "", description: "" },
   ]);
   const [starting, setStarting] = useState(false);
-  const [date, setDate] = useState<Date>(new Date());
 
-  const { user } = useGlobalState();
+  const { report } = useHomeState();
   const dispatch = useDispatch();
 
   const onChange = useCallback(
@@ -88,25 +91,21 @@ export default function CreateReport() {
       });
   }, [tasks, dispatch]);
 
-  useEffect(() => {
-    const intervalID = setInterval(() => {
-      setDate(new Date());
-    }, 1000 * 60);
-    return () => clearInterval(intervalID);
-  }, []);
+  if (report) {
+    return <Navigate to={"/home"} replace />;
+  }
+
   return (
     <div className="w-full flex flex-col my-16 lg:w-3/4 mx-auto">
-      <span className="font-comfortaa text-3xl">
-        {getGreet()}, <span className="font-raleway">{user?.name}</span>
-      </span>
-      <span className="mt-2">
-        {date.toLocaleDateString()} &nbsp;|&nbsp;{" "}
-        {date.toLocaleTimeString("en", { timeStyle: "short" })}
-      </span>
-      <div className="flex justify-between items-center mt-12 mb-6">
-        <span className="font-comfortaa text-lg flex items-center">
+      <Greet />
+      <div className="flex flex-col justify-between mt-12 mb-6">
+        <span className="font-comfortaa text-lg">
           What are your tasks for today?
         </span>
+        <ul className="text-xs font-comfortaa">
+          <li className="mb-1">You need to enlist atleast one task.</li>
+          <li>Tasks can be added|removed|updated later.</li>
+        </ul>
       </div>
       <Form onFinish={onStart}>
         {tasks.map((task, idx) => (
@@ -152,9 +151,8 @@ export default function CreateReport() {
                 type="primary"
                 size="small"
                 className="mb-2"
-                icon={
-                  <AiOutlineUp size={12} onClick={() => addTask(task, "up")} />
-                }
+                onClick={() => addTask(task, "up")}
+                icon={<AiOutlineUp size={12} />}
               />
               <Button
                 danger
@@ -168,12 +166,8 @@ export default function CreateReport() {
               <Button
                 type="primary"
                 size="small"
-                icon={
-                  <AiOutlineDown
-                    size={12}
-                    onClick={() => addTask(task, "down")}
-                  />
-                }
+                icon={<AiOutlineDown size={12} />}
+                onClick={() => addTask(task, "down")}
               />
             </div>
           </div>

@@ -26,8 +26,8 @@ function App() {
       .then((res) => {
         if (res.data.status === 200) {
           dispatch(setUser(res.data.body));
-          if (res.data.body.report) {
-            dispatch(setReport(res.data.body.report));
+          if (res.data.body.employee) {
+            dispatch(setReport(res.data.body.employee.report));
           }
         }
       })
