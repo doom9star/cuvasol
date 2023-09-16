@@ -22,3 +22,9 @@ export enum EmployeeType {
   CONSULTANT = "CONSULTANT",
   INTERN = "EMPLOYEE",
 }
+
+export enum GenderType {
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  OTHER = "OTHER",
+}

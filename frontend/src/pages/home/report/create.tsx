@@ -15,7 +15,7 @@ import { useTitle } from "../../../hooks/useTitle";
 import { cAxios } from "../../../lib/constants";
 import { setAlert } from "../../../redux/slices/global";
 import { setReport, useHomeState } from "../../../redux/slices/home";
-import { ITask } from "../../../types/models";
+import { ITask } from "../../../lib/types/models";
 
 type Task = Pick<ITask, "id" | "name" | "description">;
 

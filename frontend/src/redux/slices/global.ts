@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 import { TRootState } from "../store";
-import { IUser } from "../../types/models";
+import { IUser } from "../../lib/types/models";
 import { AlertProps } from "antd";
 
 type TGlobalState = {

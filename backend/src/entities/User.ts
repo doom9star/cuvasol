@@ -14,6 +14,7 @@ import File from "./File";
 import Report from "./Report";
 import Employee from "./Employee";
 import Group from "./Group";
+import { GenderType } from "../lib/types/model";
 
 @Entity("user")
 export default class User extends Base {
@@ -41,6 +42,9 @@ export default class User extends Base {
 
   @Column("datetime")
   birthDate: Date;
+
+  @Column({ type: "enum", enum: GenderType, default: GenderType.OTHER })
+  gender: GenderType;
 
   @Column({ type: "simple-array", nullable: true })
   urls: string[];

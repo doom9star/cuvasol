@@ -101,7 +101,7 @@ router.put(
   "/:rid/submit",
   isAuth,
   isMember([UserType.EMPLOYEE], "all"),
-  canEmployee(true),
+  canEmployee(true, true),
   async (req: TRequest, res) => {
     try {
       const { summary } = req.body;

@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { IReport, ITask } from "../../types/models";
+import { IReport, ITask } from "../../lib/types/models";
 import { useSelector } from "react-redux";
 import { TRootState } from "../store";
 

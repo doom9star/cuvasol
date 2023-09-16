@@ -2,7 +2,7 @@ import { Button, Form, Input, Radio, Typography } from "antd";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { useTitle } from "../../hooks/useTitle";
-import { UserType } from "../../types/models";
+import { UserType } from "../../lib/types/models";
 import { useMemo } from "react";
 
 export default function Register() {

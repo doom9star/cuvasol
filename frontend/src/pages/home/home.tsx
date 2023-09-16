@@ -1,7 +1,7 @@
 import { Button, Modal, Table, TableProps, Tag } from "antd";
 import { AnyObject } from "antd/es/_util/type";
 import { useCallback, useMemo, useState } from "react";
-import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit, AiOutlineSend } from "react-icons/ai";
 import { MdAdd } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -142,13 +142,22 @@ export default function Home() {
           })}
           )
         </span>
-        <Button
-          type="primary"
-          size="small"
-          icon={<MdAdd size={12} />}
-          className="ml-auto"
-          onClick={() => navigate(`/home/report/task/create`)}
-        />
+        <div className="ml-auto">
+          <Button
+            ghost
+            type="primary"
+            size="small"
+            className="mr-2"
+            icon={<MdAdd size={12} />}
+            onClick={() => navigate(`/home/report/task/create`)}
+          />
+          <Button
+            type="primary"
+            size="small"
+            icon={<AiOutlineSend size={12} />}
+            onClick={() => navigate(`/home/report/submit`)}
+          />
+        </div>
       </div>
       <div className="m-10">
         <Table columns={taskCols} dataSource={taskData} />

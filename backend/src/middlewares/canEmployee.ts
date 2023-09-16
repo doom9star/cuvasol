@@ -3,8 +3,14 @@ import { TRequest } from "../lib/types";
 import { log } from "../lib/utils/logging";
 import getResponse from "../lib/utils/getResponse";
 import Employee from "../entities/Employee";
+import timeEmployee from "../lib/utils/timeEmployee";
+import {
+  APP_PREFIX,
+  COOKIE_NAME,
+  EMPLOYEE_ADDITIONAL_HOUR,
+} from "../lib/constants";
 
-export default (required: boolean) => {
+export default (required: boolean, late: boolean = false) => {
   return async (req: TRequest, res: Response, next: NextFunction) => {
     try {
       const employee = await Employee.findOne({
@@ -12,37 +18,35 @@ export default (required: boolean) => {
       });
 
       if (employee) {
-        if (employee.leftAt)
+        if (employee.leftAt) {
+          res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
           return res.json(
             getResponse(400, "You are no longer part of the company!")
           );
+        }
 
-        const now = new Date();
-
-        if (employee.endedAt && employee.endedAt.getTime() <= now.getTime())
+        if (
+          employee.endedAt &&
+          employee.endedAt.getTime() <= new Date().getTime()
+        ) {
+          res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
           return res.json(
             getResponse(
               400,
               "Your employee contract has expired, please contact the support!"
             )
           );
+        }
 
-        const startTime = new Date();
-        startTime.setHours(
-          employee.startTime.getHours(),
-          employee.startTime.getMinutes()
+        const allowed = timeEmployee(
+          employee.startTime,
+          employee.endTime,
+          0,
+          late ? EMPLOYEE_ADDITIONAL_HOUR : 0
         );
 
-        const endTime = new Date();
-        endTime.setHours(
-          employee.endTime.getHours() - 1,
-          employee.endTime.getMinutes()
-        );
-
-        if (
-          now.getTime() < startTime.getTime() ||
-          now.getTime() > endTime.getTime()
-        ) {
+        if (!allowed) {
+          res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
           return res.json(
             getResponse(401, "You can only login within your working period!")
           );

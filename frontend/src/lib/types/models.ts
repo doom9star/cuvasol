@@ -10,6 +10,12 @@ export enum EmployeeType {
   INTERN = "EMPLOYEE",
 }
 
+export enum GenderType {
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  OTHER = "OTHER",
+}
+
 interface ICommon {
   id: string;
   createdAt: string;
@@ -23,6 +29,7 @@ export interface IUser extends ICommon {
   location: string;
   phoneNumber: string;
   birthDate: Date;
+  gender: GenderType;
   urls: string[];
   groups: IGroup[];
   employee?: IEmployee;

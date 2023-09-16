@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
-import { MoreThanOrEqual } from "typeorm";
 import { v4 } from "uuid";
 import Employee from "../entities/Employee";
 import Group from "../entities/Group";
@@ -26,39 +25,45 @@ import isNotAuth from "../middlewares/isNotAuth";
 
 const router = Router();
 
-router.get("/", isAuth, async (req: TRequest, res) => {
-  try {
-    const user = await User.findOne({
-      where: { id: req.user?.id },
-      relations: ["groups"],
-    });
-
-    if (!user) return res.json(getResponse(404));
-    if (user.groups.findIndex((g) => g.name === UserType.EMPLOYEE) !== -1) {
-      const employee = await Employee.findOne({
-        where: { user: { id: req.user?.id } },
+router.get(
+  "/",
+  isAuth,
+  isMember([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE], "any"),
+  canEmployee(false, true),
+  async (req: TRequest, res) => {
+    try {
+      const user = await User.findOne({
+        where: { id: req.user?.id },
+        relations: ["groups"],
       });
-      if (!employee) return res.json(getResponse(404, "Employee not found!"));
 
-      const report = await Report.findOne({
-        where: {
-          user: { id: req.user?.id },
-          createdAt: <any>MoreThanOrEqual(new Date().toISOString()),
-        },
-        relations: ["tasks"],
-        order: { tasks: { createdAt: "ASC" } },
-      });
-      if (report) employee.report = report;
+      if (!user) return res.json(getResponse(404));
+      if (user.groups.findIndex((g) => g.name === UserType.EMPLOYEE) !== -1) {
+        const employee = await Employee.findOne({
+          where: { user: { id: req.user?.id } },
+        });
+        if (!employee) return res.json(getResponse(404, "Employee not found!"));
 
-      user.employee = employee;
+        const report = await Report.createQueryBuilder("report")
+          .leftJoin("report.user", "user")
+          .leftJoinAndSelect("report.tasks", "task")
+          .where("user.id = :uid", { uid: req.user?.id })
+          .andWhere("report.createdAt >= CURDATE()")
+          .orderBy("task.createdAt", "ASC")
+          .getOne();
+
+        if (report) employee.report = report;
+
+        user.employee = employee;
+      }
+
+      return res.json(getResponse(200, user));
+    } catch (error: any) {
+      log("ERROR", error.message);
+      return res.json(getResponse(500, error.message));
     }
-
-    return res.json(getResponse(200, user));
-  } catch (error: any) {
-    log("ERROR", error.message);
-    return res.json(getResponse(500, error.message));
   }
-});
+);
 
 router.post("/activate-account/:tid", isNotAuth, async (req: TRequest, res) => {
   try {
