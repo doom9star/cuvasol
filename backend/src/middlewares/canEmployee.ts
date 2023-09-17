@@ -10,7 +10,7 @@ import {
   EMPLOYEE_ADDITIONAL_HOUR,
 } from "../lib/constants";
 
-export default (required: boolean, late: boolean = false) => {
+export default (required: boolean, late: boolean) => {
   return async (req: TRequest, res: Response, next: NextFunction) => {
     try {
       const employee = await Employee.findOne({

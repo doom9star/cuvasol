@@ -175,7 +175,7 @@ router.post(
     [UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER, UserType.CLIENT],
     "any"
   ),
-  canEmployee(false),
+  canEmployee(false, false),
   async (req: TRequest, res) => {
     try {
       const { email, password } = req.body;

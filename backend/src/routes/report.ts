@@ -51,7 +51,7 @@ router.post(
   "/",
   isAuth,
   isMember([UserType.EMPLOYEE], "all"),
-  canEmployee(true),
+  canEmployee(true, true),
   async (req: TRequest, res) => {
     try {
       const tasks = req.body.tasks as { name: string; description: string }[];
@@ -137,7 +137,7 @@ router.post(
   "/:rid/task",
   isAuth,
   isMember([UserType.EMPLOYEE], "all"),
-  canEmployee(true),
+  canEmployee(true, true),
   async (req: TRequest, res) => {
     try {
       const { task } = req.body;
@@ -161,7 +161,7 @@ router.delete(
   "/task/:tid",
   isAuth,
   isMember([UserType.EMPLOYEE], "all"),
-  canEmployee(true),
+  canEmployee(true, true),
   async (req: TRequest, res) => {
     try {
       await Task.delete(req.params.tid);
@@ -177,7 +177,7 @@ router.put(
   "/task/:tid",
   isAuth,
   isMember([UserType.EMPLOYEE], "all"),
-  canEmployee(true),
+  canEmployee(true, true),
   async (req: TRequest, res) => {
     try {
       const task = await Task.findOne({ where: { id: req.params.tid } });

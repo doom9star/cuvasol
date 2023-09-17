@@ -12,7 +12,7 @@ import {
   setUser,
   useGlobalState,
 } from "../../../redux/slices/global";
-import { useHomeState } from "../../../redux/slices/home";
+import { setReport, useHomeState } from "../../../redux/slices/home";
 import { cAxios } from "../../../lib/constants";
 import { useDispatch } from "react-redux";
 import { BiTask } from "react-icons/bi";
@@ -72,6 +72,7 @@ export default function SubmitReport() {
         .then((res) => {
           if (res.data.status === 200) {
             dispatch(setUser(null));
+            dispatch(setReport(null));
             dispatch(
               setAlert({
                 type: "success",
