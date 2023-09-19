@@ -40,8 +40,8 @@ export default class User extends Base {
   @Column()
   phoneNumber: string;
 
-  @Column("datetime")
-  birthDate: Date;
+  @Column()
+  birthDate: string;
 
   @Column({ type: "enum", enum: GenderType, default: GenderType.OTHER })
   gender: GenderType;

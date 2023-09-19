@@ -12,7 +12,7 @@ then
     npm start
 elif [ $1 = "mysql" ]
 then
-    mysql -u karthik -pkarthik
+    mysql -u karthik -pkarthik cuvasol
 elif [ $1 = "redis" ]
 then
     redis-cli

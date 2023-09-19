@@ -1,8 +1,8 @@
-import { Button, Form, Input, Typography } from "antd";
+import { Button, Form, Input, Spin, Typography } from "antd";
 import { AiOutlineLock, AiOutlineMail } from "react-icons/ai";
 import { useTitle } from "../../hooks/useTitle";
 import { useNavigate, useParams } from "react-router-dom";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cAxios } from "../../lib/constants";
 import { useDispatch } from "react-redux";
 import { setAlert } from "../../redux/slices/global";
@@ -15,52 +15,70 @@ type INFO = {
 export default function ResetPassword() {
   useTitle("Reset Password");
 
+  const [loading, setLoading] = useState(true);
+  const [resetting, setResetting] = useState(false);
+
   const params = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const onReset = useCallback(
     (values: INFO) => {
-      cAxios.post(`auth/reset-password/${params.tid}`, values).then((res) => {
-        if (res.data.status === 200) {
-          navigate("/auth/login");
-          dispatch(
-            setAlert({
-              type: "success",
-              message: "Password reset success",
-              description:
-                "The password has been reset successfully. You can login now!",
-            })
-          );
-        } else {
-          dispatch(
-            setAlert({
-              type: "error",
-              message: "Password reset failed",
-              description: res.data.body || res.data.message,
-            })
-          );
-        }
-      });
+      setResetting(true);
+      cAxios
+        .post(`auth/reset-password/${params.tid}`, values)
+        .then((res) => {
+          if (res.data.status === 200) {
+            navigate("/auth/login");
+            dispatch(
+              setAlert({
+                type: "success",
+                message: "Password reset success",
+                description:
+                  "The password has been reset successfully. You can login now!",
+              })
+            );
+          } else {
+            dispatch(
+              setAlert({
+                type: "error",
+                message: "Password reset failed",
+                description: res.data.body || res.data.message,
+              })
+            );
+          }
+        })
+        .finally(() => {
+          setResetting(false);
+        });
     },
     [params, navigate, dispatch]
   );
 
   useEffect(() => {
-    cAxios.get(`auth/reset-password/${params.tid}`).then((res) => {
-      if (res.data.status !== 200) {
-        navigate("/auth/login");
-        dispatch(
-          setAlert({
-            type: "error",
-            message: "Password reset unauthorized",
-            description:
-              "The password reset request is unauthorized, please visit forgot password page to request an email to reset password!",
-          })
-        );
-      }
-    });
+    cAxios
+      .get(`auth/reset-password/${params.tid}`)
+      .then((res) => {
+        if (res.data.status !== 200) {
+          navigate("/auth/login");
+          dispatch(
+            setAlert({
+              type: "error",
+              message: "Password reset unauthorized",
+              description:
+                "The password reset request is unauthorized, please visit forgot password page to request an email to reset password!",
+            })
+          );
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [params, navigate, dispatch]);
+
+  if (loading) {
+    return <Spin size="large" className="absolute top-1/2 left-1/2" />;
+  }
 
   return (
     <div className="w-full h-full flex flex-col justify-center lg:w-1/2 mx-auto">
@@ -101,6 +119,7 @@ export default function ResetPassword() {
             className="text-xs ml-4"
             icon={<AiOutlineMail size={10} />}
             htmlType="submit"
+            loading={resetting}
           >
             Submit
           </Button>

@@ -1,26 +1,30 @@
 import { Router } from "express";
-import isAuth from "../middlewares/isAuth";
-import isMember from "../middlewares/isMember";
-import { UserType } from "../lib/types/model";
-import { TRequest } from "../lib/types";
-import { log } from "../lib/utils/logging";
-import getResponse from "../lib/utils/getResponse";
 import Report from "../entities/Report";
 import Task from "../entities/Task";
-import canEmployee from "../middlewares/canEmployee";
 import { APP_PREFIX, COOKIE_NAME } from "../lib/constants";
+import { TRequest } from "../lib/types";
+import { UserType } from "../lib/types/model";
+import getResponse from "../lib/utils/getResponse";
+import { log } from "../lib/utils/logging";
+import canEmployee from "../middlewares/canEmployee";
+import isAuth from "../middlewares/isAuth";
+import isMember from "../middlewares/isMember";
 
 const router = Router();
 
 router.get(
-  "/",
+  "/all/:date",
   isAuth,
   isMember([UserType.ADMIN, UserType.MANAGER], "any"),
-  async (_, res) => {
+  async (req, res) => {
     try {
-      const reports = await Report.find({
-        order: { createdAt: "DESC" },
-      });
+      const date = req.params.date || new Date().toISOString().split("T")[0];
+      const reports = await Report.createQueryBuilder("report")
+        .leftJoinAndSelect("report.user", "user")
+        .where("report.createdAt like :date", { date: `%${date}%` })
+        .orderBy("report.createdAt", "ASC")
+        .getMany();
+
       return res.json(getResponse(200, reports));
     } catch (error: any) {
       log("ERROR", error.message);
@@ -78,17 +82,12 @@ router.post(
 );
 
 router.put(
-  "/:rid/approve",
+  "/:rid",
   isAuth,
   isMember([UserType.ADMIN, UserType.MANAGER], "any"),
   async (req: TRequest, res) => {
     try {
-      const report = await Report.findOne({ where: { id: req.params.rid } });
-      if (!report) return res.json(getResponse(404));
-
-      report.approved = true;
-      await report.save();
-
+      await Report.update({ id: req.params.rid }, req.body);
       return res.json(getResponse(200));
     } catch (error: any) {
       log("ERROR", error.message);
