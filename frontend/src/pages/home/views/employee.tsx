@@ -1,13 +1,13 @@
-import { Fragment, useCallback, useMemo, useState } from "react";
-import { deleteTask, useHomeState } from "../../../redux/slices/home";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { Button, Modal, Table, TableProps, Tag } from "antd";
+import { Button, Collapse, Modal, Table, TableProps, Tag } from "antd";
 import { AnyObject } from "antd/es/_util/type";
+import { Fragment, useCallback, useMemo, useState } from "react";
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineSend } from "react-icons/ai";
+import { MdAdd } from "react-icons/md";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { cAxios } from "../../../lib/constants";
 import { setAlert } from "../../../redux/slices/global";
-import { MdAdd } from "react-icons/md";
+import { deleteTask, useHomeState } from "../../../redux/slices/home";
 
 export default function EmployeeView() {
   const [deleteTaskID, setDeleteTaskID] = useState<string | null>(null);
@@ -139,6 +139,32 @@ export default function EmployeeView() {
       >
         <p>Do you want to delete "{deleteTaskID?.split("|-|-|")[1]}"?</p>
       </Modal>
+      <Collapse
+        className="mt-12 font-comfortaa"
+        items={[
+          {
+            label: "Instructions",
+            children: (
+              <ul className="text-xs space-y-2">
+                <li>
+                  Employee has to login 1Hr before EH, where EH = Ending hour.
+                </li>
+                <li>
+                  Employee will be logged out immediately after successful
+                  report submission.
+                </li>
+                <li>
+                  Employee will be logged out automatically, if the EH + 1Hr is
+                  exceeded.
+                </li>
+                <li>Report must have atleast one task for submission.</li>
+                <li>Report must be submitted before EH + 1.</li>
+                <li>Any reports beyond EH + 1Hr will be dismissed.</li>
+              </ul>
+            ),
+          },
+        ]}
+      />
       <div className="mt-12 flex items-center">
         <span className="font-comfortaa text-2xl">Report </span>
         <span className="text-xs ml-2">

@@ -26,7 +26,7 @@ export default function ReportsMenu() {
       key: "status",
       render: (_, { status }) => {
         return status === ReportStatus.PENDING ? (
-          <Tag color="orange">PENDING</Tag>
+          <Tag color="warning">PENDING</Tag>
         ) : status === ReportStatus.APPROVED ? (
           <Tag color="green">APPROVED</Tag>
         ) : (
