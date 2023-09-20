@@ -25,10 +25,11 @@ body {
 }
 
 .ant-alert-description {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
 }
 
 .ant-alert-message {
   margin-bottom: 2px !important;
   font-weight: bold;
+  font-size: 0.8rem !important;
 }

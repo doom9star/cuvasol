@@ -9,11 +9,12 @@ import { log } from "../lib/utils/logging";
 import canEmployee from "../middlewares/canEmployee";
 import isAuth from "../middlewares/isAuth";
 import isMember from "../middlewares/isMember";
+import Employee from "../entities/Employee";
 
 const router = Router();
 
 router.get(
-  "/all/:date",
+  "/all/:date?",
   isAuth,
   isMember([UserType.ADMIN, UserType.MANAGER], "any"),
   async (req, res) => {
@@ -21,8 +22,8 @@ router.get(
       const date = req.params.date || new Date().toISOString().split("T")[0];
       const reports = await Report.createQueryBuilder("report")
         .leftJoinAndSelect("report.user", "user")
-        .where("report.createdAt like :date", { date: `%${date}%` })
-        .orderBy("report.createdAt", "ASC")
+        .where("report.submittedAt like :date", { date: `%${date}%` })
+        .orderBy("report.submittedAt", "ASC")
         .getMany();
 
       return res.json(getResponse(200, reports));
@@ -42,7 +43,17 @@ router.get(
       const report = await Report.findOne({
         where: { id: req.params.rid },
         relations: ["user", "tasks"],
+        order: { tasks: { createdAt: "ASC" } },
       });
+      if (!report) return res.json(getResponse(404, "Report not found!"));
+
+      const employee = await Employee.findOne({
+        where: { user: { id: report.user.id } },
+      });
+      if (!employee) return res.json(getResponse(404, "Employee not found!"));
+
+      report.user.employee = employee;
+
       return res.json(getResponse(200, report));
     } catch (error: any) {
       log("ERROR", error.message);
@@ -82,12 +93,12 @@ router.post(
 );
 
 router.put(
-  "/:rid",
+  "/:rid/status",
   isAuth,
   isMember([UserType.ADMIN, UserType.MANAGER], "any"),
   async (req: TRequest, res) => {
     try {
-      await Report.update({ id: req.params.rid }, req.body);
+      await Report.update({ id: req.params.rid }, { status: req.body.status });
       return res.json(getResponse(200));
     } catch (error: any) {
       log("ERROR", error.message);
@@ -118,7 +129,6 @@ router.put(
           )
         );
       report.summary = summary;
-      report.submitted = true;
       report.submittedAt = new Date();
       await report.save();
 

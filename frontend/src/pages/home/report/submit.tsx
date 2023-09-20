@@ -6,7 +6,7 @@ import { AiOutlineCalendar, AiOutlineLogin } from "react-icons/ai";
 import { BsSendFill } from "react-icons/bs";
 import { FaUserTie } from "react-icons/fa";
 import { HiOutlineDocumentReport } from "react-icons/hi";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   setAlert,
   setUser,
@@ -27,6 +27,7 @@ export default function SubmitReport() {
   const { user } = useGlobalState();
   const { report } = useHomeState();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const taskCols: TableProps<AnyObject>["columns"] = [
     { title: "Name", dataIndex: "name", key: "name" },
@@ -73,11 +74,12 @@ export default function SubmitReport() {
           if (res.data.status === 200) {
             dispatch(setUser(null));
             dispatch(setReport(null));
+            navigate("/");
             dispatch(
               setAlert({
                 type: "success",
                 message: "Report submission success",
-                description: `Report has been successfully submitted for today!`,
+                description: `Report has been successfully submitted for today. Have a nice day!`,
               })
             );
           } else {
@@ -95,7 +97,7 @@ export default function SubmitReport() {
           setSubmitting(false);
         });
     },
-    [dispatch, report]
+    [dispatch, report, navigate]
   );
 
   if (!user?.employee) {

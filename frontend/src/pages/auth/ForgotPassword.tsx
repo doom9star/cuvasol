@@ -2,7 +2,7 @@ import { Button, Form, Input } from "antd";
 import { AiOutlineMail } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { useTitle } from "../../hooks/useTitle";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { cAxios } from "../../lib/constants";
 import { useDispatch } from "react-redux";
 import { setAlert } from "../../redux/slices/global";
@@ -14,32 +14,40 @@ type INFO = {
 export default function ForgotPassword() {
   useTitle("Forgot Password");
 
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const onSubmit = useCallback(
     (values: INFO) => {
-      cAxios.post("auth/forgot-password", values).then((res) => {
-        if (res.data.status === 200) {
-          navigate("/auth/login");
-          dispatch(
-            setAlert({
-              type: "success",
-              message: "Password request success",
-              description:
-                "The reset password url has been emailed to you. Visit that url to reset password!",
-            })
-          );
-        } else {
-          dispatch(
-            setAlert({
-              type: "error",
-              message: "Password request failed",
-              description: res.data.body || res.data.message,
-            })
-          );
-        }
-      });
+      cAxios
+        .post("auth/forgot-password", values)
+        .then((res) => {
+          setLoading(true);
+          if (res.data.status === 200) {
+            navigate("/auth/login");
+            dispatch(
+              setAlert({
+                type: "success",
+                message: "Password request success",
+                description:
+                  "The reset password url has been emailed to you. Visit that url to reset password!",
+              })
+            );
+          } else {
+            dispatch(
+              setAlert({
+                type: "error",
+                message: "Password request failed",
+                description: res.data.body || res.data.message,
+              })
+            );
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     },
     [navigate, dispatch]
   );
@@ -66,6 +74,7 @@ export default function ForgotPassword() {
             className="text-xs ml-4"
             icon={<AiOutlineMail size={10} />}
             htmlType="submit"
+            loading={loading}
           >
             Reset
           </Button>

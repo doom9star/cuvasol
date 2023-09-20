@@ -3,7 +3,7 @@ import { AiOutlineLogin } from "react-icons/ai";
 import { FiLogIn } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { useTitle } from "../../hooks/useTitle";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { cAxios } from "../../lib/constants";
 import { useDispatch } from "react-redux";
 import { setAlert, setUser } from "../../redux/slices/global";
@@ -16,25 +16,33 @@ type INFO = {
 export default function Login() {
   useTitle("Login");
 
+  const [loading, setLoading] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const onLogin = useCallback(
     (values: INFO) => {
-      cAxios.post("auth/login", values).then((res) => {
-        if (res.data.status === 200) {
-          dispatch(setUser(res.data.body));
-          navigate("/home");
-        } else {
-          dispatch(
-            setAlert({
-              type: "error",
-              message: "Account login failed",
-              description: res.data.body || res.data.message,
-            })
-          );
-        }
-      });
+      setLoading(true);
+      cAxios
+        .post("auth/login", values)
+        .then((res) => {
+          if (res.data.status === 200) {
+            dispatch(setUser(res.data.body));
+            navigate("/home");
+          } else {
+            dispatch(
+              setAlert({
+                type: "error",
+                message: "Account login failed",
+                description: res.data.body || res.data.message,
+              })
+            );
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     },
     [navigate, dispatch]
   );
@@ -74,6 +82,7 @@ export default function Login() {
             className="text-xs ml-4"
             icon={<FiLogIn size={10} />}
             htmlType="submit"
+            loading={loading}
           >
             Login
           </Button>

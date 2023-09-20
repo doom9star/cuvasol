@@ -1,13 +1,13 @@
 import { Button, Form, Input, Radio, Typography } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { MdAdd, MdSave } from "react-icons/md";
+import { useCallback, useMemo, useState } from "react";
+import { MdEdit, MdSave } from "react-icons/md";
+import { useDispatch } from "react-redux";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { useTitle } from "../../../../hooks/useTitle";
+import { cAxios } from "../../../../lib/constants";
 import { setAlert, useGlobalState } from "../../../../redux/slices/global";
 import { setTask, useHomeState } from "../../../../redux/slices/home";
-import { useCallback, useMemo, useState } from "react";
-import { cAxios } from "../../../../lib/constants";
-import { useTitle } from "../../../../hooks/useTitle";
-import { useDispatch } from "react-redux";
 
 type INFO = {
   name: string;
@@ -84,7 +84,7 @@ export default function EditTask() {
         level={4}
         className="font-poppins flex items-center py-8"
       >
-        <MdAdd className="mr-2" /> Task
+        <MdEdit className="mr-2" /> Task
       </Typography.Title>
       <Form labelCol={{ span: 8 }} labelAlign="left" onFinish={onSave}>
         <Form.Item

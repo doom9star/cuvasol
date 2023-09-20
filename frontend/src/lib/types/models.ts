@@ -16,6 +16,12 @@ export enum GenderType {
   OTHER = "OTHER",
 }
 
+export enum ReportStatus {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
+
 interface ICommon {
   id: string;
   createdAt: string;
@@ -28,7 +34,7 @@ export interface IUser extends ICommon {
   designation: string;
   location: string;
   phoneNumber: string;
-  birthDate: Date;
+  birthstring: string;
   gender: GenderType;
   urls: string[];
   groups: IGroup[];
@@ -42,20 +48,20 @@ export interface IGroup extends ICommon {
 export interface IEmployee extends ICommon {
   type: EmployeeType;
   salary: number;
-  startTime: Date;
-  endTime: Date;
-  joinedAt: Date;
-  endedAt: Date | null;
-  leftAt: Date | null;
+  startTime: string;
+  endTime: string;
+  joinedAt: string;
+  endedAt: string | null;
+  leftAt: string | null;
   report?: IReport;
 }
 
 export interface IReport extends ICommon {
   summary: string;
-  submitted: boolean;
-  approved: boolean;
-  submittedAt: Date | null;
+  status: ReportStatus;
+  submittedAt: string | null;
   tasks: ITask[];
+  user: IUser;
 }
 
 export interface ITask extends ICommon {

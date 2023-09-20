@@ -28,3 +28,9 @@ export enum GenderType {
   FEMALE = "FEMALE",
   OTHER = "OTHER",
 }
+
+export enum ReportStatus {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
