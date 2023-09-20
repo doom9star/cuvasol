@@ -123,7 +123,6 @@ export default function CreateReport() {
                 <Input
                   placeholder="Task"
                   autoFocus
-                  className="font-mono"
                   name="name"
                   value={task.name}
                   onChange={(e) => onChange(e, task)}
@@ -137,7 +136,6 @@ export default function CreateReport() {
               >
                 <TextArea
                   placeholder="Write a brief description about the task..."
-                  className="font-mono"
                   onChange={(e) => onChange(e, task)}
                   spellCheck={false}
                   name="description"

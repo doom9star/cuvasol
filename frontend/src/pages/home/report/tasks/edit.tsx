@@ -93,12 +93,7 @@ export default function EditTask() {
           rules={[{ required: true, message: "Please input task name!" }]}
           initialValue={task.name}
         >
-          <Input
-            autoFocus
-            name="name"
-            placeholder="Task"
-            className="font-mono"
-          />
+          <Input autoFocus name="name" placeholder="Task" />
         </Form.Item>
         <Form.Item
           label="Description"
@@ -110,7 +105,6 @@ export default function EditTask() {
         >
           <TextArea
             placeholder="Write a brief description about the task..."
-            className="font-mono"
             spellCheck={false}
             name="description"
             rows={4}

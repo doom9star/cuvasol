@@ -1,13 +1,15 @@
-import { Avatar, Button, List, Spin, Tag } from "antd";
+import { Avatar, Button, Spin, Tag } from "antd";
 import { Fragment, useEffect, useState } from "react";
-import { FiUser } from "react-icons/fi";
 import { MdAdd } from "react-icons/md";
 import { cAxios } from "../../../../lib/constants";
 import { IUser } from "../../../../lib/types/models";
+import { useNavigate } from "react-router-dom";
 
 export default function EmployeesMenu() {
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<IUser[]>([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     cAxios
@@ -28,8 +30,9 @@ export default function EmployeesMenu() {
         <span className="font-comfortaa text-xl">Employees</span>
         <Button
           type="primary"
-          className="text-xs mt-8"
+          className="text-xs"
           icon={<MdAdd size={10} />}
+          onClick={() => navigate("/home/employee/create")}
         >
           Add
         </Button>
@@ -40,13 +43,13 @@ export default function EmployeesMenu() {
         ) : (
           <div>
             {employees.map((e) => (
-              <div className="flex items-start" key={e.id}>
-                <Avatar className="bg-green-300 text-green-700">
-                  {e.name[0]}
-                </Avatar>
+              <div className="flex items-start mb-8" key={e.id}>
+                <Avatar className="bg-green-400 font-bold">{e.name[0]}</Avatar>
                 <div className="flex flex-col ml-4 font-comfortaa">
                   <span className="text-xs mb-2">{e.name}</span>
-                  <Tag color="orange">{e.designation}</Tag>
+                  <div>
+                    <Tag color="orange">{e.designation}</Tag>
+                  </div>
                 </div>
               </div>
             ))}

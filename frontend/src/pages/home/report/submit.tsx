@@ -108,6 +108,10 @@ export default function SubmitReport() {
     return <Navigate to={"/home/report/create"} />;
   }
 
+  if (report.tasks.length <= 0) {
+    return <Navigate to={"/home"} />;
+  }
+
   return (
     <div className="w-full flex flex-col lg:w-3/4 mx-auto">
       <div className="w-full font-comfortaa flex flex-col my-10 px-8 pb-8 border border-solid border-gray-200">
@@ -127,9 +131,9 @@ export default function SubmitReport() {
           <div className="flex items-center text-xs mb-2">
             <FaUserTie size={12} className="mr-2" /> <span>{user.name}</span>
           </div>
-          <Tag color="orange" className="ml-4 mb-2">
-            {user.designation}
-          </Tag>
+          <div className="ml-4 mb-2">
+            <Tag color="orange">{user.designation}</Tag>
+          </div>
           <div className="flex items-center text-xs ml-4">
             <span>
               (
@@ -176,7 +180,6 @@ export default function SubmitReport() {
           >
             <TextArea
               placeholder="Write a summary about the report..."
-              className="font-mono"
               spellCheck={false}
               name="summary"
               rows={8}

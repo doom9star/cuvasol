@@ -2,11 +2,14 @@ import { setAlert, setUser, useGlobalState } from "../redux/slices/global";
 import { useEffect, useRef } from "react";
 import { EMPLOYEE_ADDITIONAL_HOUR, cAxios } from "../lib/constants";
 import { useDispatch } from "react-redux";
-import { setReport } from "../redux/slices/home";
+import { setReport, useHomeState } from "../redux/slices/home";
 
 export function useAutoLogout() {
   const { user } = useGlobalState();
+  const { report } = useHomeState();
+
   const userRef = useRef(user);
+  const reportRef = useRef(report);
 
   const dispatch = useDispatch();
 
@@ -24,7 +27,7 @@ export function useAutoLogout() {
         );
 
         if (now.getTime() > endTime.getTime()) {
-          cAxios.delete("auth/logout").then((res) => {
+          cAxios.delete(`auth/logout/${reportRef.current?.id}`).then((res) => {
             if (res.data.status === 200) {
               dispatch(setUser(null));
               dispatch(setReport(null));

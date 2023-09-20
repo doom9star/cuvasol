@@ -145,6 +145,7 @@ export default function EmployeeView() {
           <Button
             type="primary"
             size="small"
+            disabled={(report?.tasks.length || 0) <= 0}
             icon={<AiOutlineSend size={12} />}
             onClick={() => navigate(`/home/report/submit`)}
           />

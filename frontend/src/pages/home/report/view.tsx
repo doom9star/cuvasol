@@ -173,9 +173,9 @@ export default function ViewReport({ editable }: Props) {
             <FaUserTie size={12} className="mr-2" />{" "}
             <span>{report.user.name}</span>
           </div>
-          <Tag color="orange" className="ml-4 mb-2">
-            {report.user.designation}
-          </Tag>
+          <div className="ml-4 mb-2">
+            <Tag color="orange">{report.user.designation}</Tag>
+          </div>
           <div className="flex items-center text-xs ml-4">
             <span>
               (

@@ -125,7 +125,6 @@ router.post(
       const {
         name,
         email,
-        password,
         type,
         designation,
         location,
@@ -144,10 +143,11 @@ router.post(
         );
       }
 
+      const password = v4()[10];
       const user = await User.create({
         name,
-        email,
         password,
+        email,
         location,
         designation,
         phoneNumber,
@@ -183,7 +183,21 @@ router.post(
       const url = `${process.env.CLIENT}/auth/activate-account/${tid}`;
       await req.cacher.set(key, user.id);
 
-      return res.json(getResponse(200, url));
+      sendMail({
+        from: <any>process.env.MAILER_EMAIL,
+        to: user.email,
+        subject: "Cuvaosl | Registration Successfull",
+        html: `Hi ${user.name}!
+      Your account has been successfully registered in cuvasol.
+
+      Your password: ${password}
+      Visit this url to activate your account: ${url}
+
+      After activation, you can login during your working hours to submit reports everyday!
+      `,
+      });
+
+      return res.json(getResponse(200, { url, password }));
     } catch (error: any) {
       log("ERROR", error.message);
       return res.json(getResponse(500, error.message));
@@ -248,8 +262,11 @@ router.post(
   }
 );
 
-router.delete("/logout", isAuth, async (_, res) => {
+router.delete("/logout/:rid?", isAuth, async (req, res) => {
   try {
+    if (req.params.rid) {
+      await Report.delete({ id: req.params.rid });
+    }
     res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
     return res.json(getResponse(200));
   } catch (error: any) {
