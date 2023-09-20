@@ -22,7 +22,18 @@ export default function EmployeeView() {
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Added", dataIndex: "added", key: "added" },
-    { title: "Updated", dataIndex: "updated", key: "updated" },
+    {
+      title: "Updated",
+      dataIndex: "updated",
+      key: "updated",
+      render: (_, { updated }) => {
+        return updated === "-" ? (
+          <Tag color="warning">unmodified</Tag>
+        ) : (
+          updated
+        );
+      },
+    },
     {
       title: "Completed",
       dataIndex: "completed",
@@ -72,9 +83,13 @@ export default function EmployeeView() {
         added: new Date(t.createdAt).toLocaleTimeString("en", {
           timeStyle: "short",
         }),
-        updated: new Date(t.updatedAt).toLocaleTimeString("en", {
-          timeStyle: "short",
-        }),
+        updated:
+          new Date(t.createdAt).toISOString().split("T")[1] ===
+          new Date(t.updatedAt).toISOString().split("T")[1]
+            ? "-"
+            : new Date(t.updatedAt).toLocaleTimeString("en", {
+                timeStyle: "short",
+              }),
         completed: t.completed,
         edit: `${t.id}|-|-|${t.name}`,
       }));
