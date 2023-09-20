@@ -2,7 +2,7 @@ import { Menu, MenuProps } from "antd";
 import { Fragment, useState } from "react";
 import { FaUsers } from "react-icons/fa";
 import { TbReportAnalytics } from "react-icons/tb";
-import EmployeesMenu from "./employees";
+import StaffsMenu from "./staffs";
 import ReportsMenu from "./reports";
 import { MdSettings } from "react-icons/md";
 import SettingsMenu from "../settings";
@@ -14,8 +14,8 @@ const ManagerMenu: MenuProps["items"] = [
     icon: <TbReportAnalytics size={12} />,
   },
   {
-    label: "Employees",
-    key: "employees",
+    label: "Staffs",
+    key: "staffs",
     icon: <FaUsers size={12} />,
   },
   {
@@ -38,8 +38,8 @@ export default function ManagerView() {
       />
       {menu === "reports" ? (
         <ReportsMenu />
-      ) : menu === "employees" ? (
-        <EmployeesMenu />
+      ) : menu === "staffs" ? (
+        <StaffsMenu />
       ) : (
         <SettingsMenu />
       )}

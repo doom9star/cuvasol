@@ -13,49 +13,50 @@ import {
 export default (required: boolean, late: boolean) => {
   return async (req: TRequest, res: Response, next: NextFunction) => {
     try {
-      const employee = await Employee.findOne({
-        where: { user: { id: req.user?.id } },
-      });
+      if (req.user?.id) {
+        const employee = await Employee.findOne({
+          where: { user: { id: req.user?.id } },
+        });
 
-      if (employee) {
-        if (employee.leftAt) {
-          res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
-          return res.json(
-            getResponse(400, "You are no longer part of the company!")
+        if (employee) {
+          if (employee.leftAt) {
+            res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
+            return res.json(
+              getResponse(400, "You are no longer part of the company!")
+            );
+          }
+
+          if (
+            employee.endedAt &&
+            employee.endedAt.getTime() <= new Date().getTime()
+          ) {
+            res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
+            return res.json(
+              getResponse(
+                400,
+                "Your employee contract has expired, please contact the support!"
+              )
+            );
+          }
+
+          const allowed = timeEmployee(
+            employee.startTime,
+            employee.endTime,
+            0,
+            late ? EMPLOYEE_ADDITIONAL_HOUR : 0
           );
-        }
 
-        if (
-          employee.endedAt &&
-          employee.endedAt.getTime() <= new Date().getTime()
-        ) {
-          res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
-          return res.json(
-            getResponse(
-              400,
-              "Your employee contract has expired, please contact the support!"
-            )
-          );
-        }
+          if (!allowed) {
+            res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
+            return res.json(
+              getResponse(401, "You can only login within your working period!")
+            );
+          }
 
-        const allowed = timeEmployee(
-          employee.startTime,
-          employee.endTime,
-          0,
-          late ? EMPLOYEE_ADDITIONAL_HOUR : 0
-        );
-
-        if (!allowed) {
-          res.clearCookie(`${APP_PREFIX}${COOKIE_NAME}`);
-          return res.json(
-            getResponse(401, "You can only login within your working period!")
-          );
-        }
-
-        return next();
-      } else if (required)
-        return res.json(getResponse(404, "Employee not found!"));
-
+          return next();
+        } else if (required)
+          return res.json(getResponse(404, "Employee not found!"));
+      }
       next();
     } catch (error: any) {
       log("ERROR", error.message);

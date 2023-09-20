@@ -11,6 +11,8 @@ import { DS } from "./ormconfig";
 import MainRouter from "./routes";
 import TCP from "tcp-port-used";
 import cors from "cors";
+import morgan from "morgan";
+import KP from "kill-port";
 
 const main = async () => {
   dotenv.config({ path: path.join(__dirname, "../.env") });
@@ -21,6 +23,7 @@ const main = async () => {
   const cacher = createClient();
   await cacher.connect();
 
+  app.use(morgan("dev"));
   app.use(cors({ origin: process.env.CLIENT, credentials: true }));
   app.use(cookieParser());
   app.use(bodyParser.json());
@@ -30,14 +33,12 @@ const main = async () => {
   });
   app.use("/", MainRouter);
 
-  const used = await TCP.check({ port: parseInt(process.env.PORT as string) });
-  if (!used) {
-    app.listen(process.env.PORT, () => {
-      log("INFO", `server running on http://localhost:${process.env.PORT}!`);
-    });
-  } else {
+  try {
+    await KP(process.env.PORT as any, "tcp");
+  } catch (e) {}
+  app.listen(process.env.PORT, () => {
     log("INFO", `server running on http://localhost:${process.env.PORT}!`);
-  }
+  });
 };
 
 main();

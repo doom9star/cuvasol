@@ -5,7 +5,7 @@ import { cAxios } from "../../../../lib/constants";
 import { IUser } from "../../../../lib/types/models";
 import { useNavigate } from "react-router-dom";
 
-export default function EmployeesMenu() {
+export default function StaffsMenu() {
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<IUser[]>([]);
 
@@ -13,7 +13,7 @@ export default function EmployeesMenu() {
 
   useEffect(() => {
     cAxios
-      .get(`user/employees`)
+      .get(`user/staffs`)
       .then((res) => {
         if (res.data.status === 200) {
           setEmployees(res.data.body);
@@ -27,7 +27,7 @@ export default function EmployeesMenu() {
   return (
     <Fragment>
       <div className="mx-10 mt-10 mb-5 flex items-center justify-between">
-        <span className="font-comfortaa text-xl">Employees</span>
+        <span className="font-comfortaa text-xl">Staffs</span>
         <Button
           type="primary"
           className="text-xs"
