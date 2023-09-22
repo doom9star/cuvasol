@@ -104,7 +104,7 @@ export default function CreateReport() {
         </span>
         <ul className="text-xs font-comfortaa">
           <li className="mb-1">You need to enlist atleast one task.</li>
-          <li>Tasks can be added|removed|updated later.</li>
+          <li>Tasks can be added, removed or updated later.</li>
         </ul>
       </div>
       <Form onFinish={onStart}>

@@ -28,7 +28,7 @@ export default function EmployeeView() {
       key: "updated",
       render: (_, { updated }) => {
         return updated === "-" ? (
-          <Tag color="warning">unmodified</Tag>
+          <Tag color="warning">UNMODIFIED</Tag>
         ) : (
           updated
         );
@@ -84,8 +84,8 @@ export default function EmployeeView() {
           timeStyle: "short",
         }),
         updated:
-          new Date(t.createdAt).toISOString().split("T")[1] ===
-          new Date(t.updatedAt).toISOString().split("T")[1]
+          new Date(t.createdAt).toISOString().split("T")[1].slice(0, 5) ===
+          new Date(t.updatedAt).toISOString().split("T")[1].slice(0, 5)
             ? "-"
             : new Date(t.updatedAt).toLocaleTimeString("en", {
                 timeStyle: "short",
