@@ -252,9 +252,11 @@ export default function ViewReport({ editable }: Props) {
         ) : (
           <div>
             {report.status === ReportStatus.APPROVED ? (
-              <Tag color="#008000">Approved</Tag>
+              <Tag color="#238823">Approved</Tag>
+            ) : report.status === ReportStatus.REJECTED ? (
+              <Tag color="#D2222D">Rejected</Tag>
             ) : (
-              <Tag color="#FF0000">Rejected</Tag>
+              <Tag color="#FFBF00">Pending</Tag>
             )}
           </div>
         )}

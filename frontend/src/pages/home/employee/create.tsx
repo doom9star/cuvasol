@@ -8,7 +8,7 @@ import {
   TimePicker,
   Typography,
 } from "antd";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useTitle } from "../../../hooks/useTitle";
@@ -27,7 +27,8 @@ type INFO = {
   birthDate: Date;
   gender: GenderType;
   urls: string[];
-  type: EmployeeType;
+  type: EmployeeType | UserType;
+  subtype: EmployeeType;
   salary: number;
   officeHour: string[];
   joinedAt: string;
@@ -42,26 +43,33 @@ export default function CreateEmployee() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [form] = Form.useForm<INFO>();
+  const typeWatch = Form.useWatch("type", form);
+
   const onAdd = useCallback(
     (values: INFO) => {
-      const newValues = {
+      const newValues: any = {
         name: values.name,
         email: values.email,
         designation: values.designation,
-        type: UserType.EMPLOYEE,
+        type: values.type,
+        subtype: values.subtype,
         location: values.location,
         phoneNumber: values.phoneNumber,
         birthDate: new Date((values.birthDate as any).$d).toISOString(),
         gender: values.gender,
         urls: values.urls,
-        employee: {
-          type: values.type,
+      };
+
+      if (values.type === UserType.EMPLOYEE) {
+        newValues.employee = {
           salary: values.salary,
           startTime: new Date((values.officeHour[0] as any).$d).toISOString(),
           endTime: new Date((values.officeHour[1] as any).$d).toISOString(),
           joinedAt: new Date((values.joinedAt as any).$d).toISOString(),
-        },
-      };
+        };
+      }
+
       setAdding(true);
       cAxios
         .post("auth/register", newValues)
@@ -93,6 +101,10 @@ export default function CreateEmployee() {
     [dispatch, navigate]
   );
 
+  const isAdmin = useMemo(() => {
+    return user?.groups.findIndex((g) => g.name === UserType.ADMIN) !== -1;
+  }, [user]);
+
   if (user?.employee) {
     return <Navigate to={"/home"} />;
   }
@@ -105,7 +117,12 @@ export default function CreateEmployee() {
       >
         <MdAdd className="mr-2" /> Employee
       </Typography.Title>
-      <Form labelCol={{ span: 8 }} labelAlign="left" onFinish={onAdd}>
+      <Form
+        form={form}
+        labelCol={{ span: 8 }}
+        labelAlign="left"
+        onFinish={onAdd}
+      >
         <Form.Item
           label="Name"
           name="name"
@@ -176,16 +193,42 @@ export default function CreateEmployee() {
         >
           <TextArea spellCheck={false} rows={4} />
         </Form.Item>
-        <Form.Item
-          label="Type"
-          name="type"
-          rules={[{ required: true, message: "Please input employee type!" }]}
-        >
-          <Radio.Group optionType="button" buttonStyle="solid">
-            <Radio value={EmployeeType.CONSULTANT}>Consultant</Radio>
-            <Radio value={EmployeeType.INTERN}>Intern</Radio>
-          </Radio.Group>
-        </Form.Item>
+        {isAdmin ? (
+          <Form.Item
+            label="Type"
+            name="type"
+            rules={[{ required: true, message: "Please input staff type!" }]}
+          >
+            <Radio.Group optionType="button" buttonStyle="solid">
+              <Radio value={UserType.MANAGER}>Manager</Radio>
+              <Radio value={UserType.CLIENT}>Client</Radio>
+              <Radio value={UserType.EMPLOYEE}>Employee</Radio>
+            </Radio.Group>
+          </Form.Item>
+        ) : (
+          <Form.Item
+            label="Type"
+            name="type"
+            rules={[{ required: true, message: "Please input employee type!" }]}
+          >
+            <Radio.Group optionType="button" buttonStyle="solid">
+              <Radio value={EmployeeType.CONSULTANT}>Consultant</Radio>
+              <Radio value={EmployeeType.INTERN}>Intern</Radio>
+            </Radio.Group>
+          </Form.Item>
+        )}
+        {typeWatch === UserType.EMPLOYEE && (
+          <Form.Item
+            label="Sub Type"
+            name="subtype"
+            rules={[{ required: true, message: "Please input employee type!" }]}
+          >
+            <Radio.Group optionType="button" buttonStyle="solid">
+              <Radio value={EmployeeType.CONSULTANT}>Consultant</Radio>
+              <Radio value={EmployeeType.INTERN}>Intern</Radio>
+            </Radio.Group>
+          </Form.Item>
+        )}
         <Form.Item
           label="Salary"
           name="salary"

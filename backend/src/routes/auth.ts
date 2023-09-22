@@ -126,6 +126,7 @@ router.post(
         name,
         email,
         type,
+        subtype,
         designation,
         location,
         phoneNumber,
@@ -135,11 +136,11 @@ router.post(
       } = req.body;
 
       if (
-        !req.groups?.includes(UserType.ADMIN) &&
-        ![UserType.EMPLOYEE, UserType.CLIENT].includes(type)
+        [UserType.MANAGER, UserType.CLIENT].includes(type) &&
+        !req.groups?.includes(UserType.ADMIN)
       ) {
         return res.json(
-          getResponse(400, "MANAGER can only create employees/clients!")
+          getResponse(400, "ADMIN can only create managers/clients!")
         );
       }
 
@@ -158,10 +159,10 @@ router.post(
 
       if (type === UserType.EMPLOYEE) {
         const {
-          employee: { type, salary, startTime, endTime, joinedAt },
+          employee: { salary, startTime, endTime, joinedAt },
         } = req.body;
         await Employee.create({
-          type,
+          type: subtype,
           salary,
           startTime,
           endTime,
@@ -218,6 +219,7 @@ router.post(
       const { email, password } = req.body;
       const user = await User.findOne({
         where: { email: email },
+        relations: ["groups"],
       });
 
       if (!user) return res.json(getResponse(404));
